@@ -1,0 +1,11 @@
+{
+  "id": "ovale-5x3",
+  "nom": "Ovale 5 × 3 m",
+  "forme": "ovale",
+  "longueur": 5.0,
+  "largeur": 3.0,
+  "profondeur": 1.3,
+  "margelle": { "largeur": 0.25, "epaisseur": 0.04, "couleur": "#a8784a", "matiere": "bois" },
+  "eaux": { "bleu-clair": "#4fb3d9", "bleu-profond": "#1f6f9f", "gris-sable": "#8a9a9c" },
+  "eauParDefaut": "bleu-clair"
+}

@@ -1,0 +1,13 @@
+{
+  "id": "rectangulaire-8x4",
+  "nom": "Rectangulaire 8 × 4 m",
+  "forme": "rectangle",
+  "longueur": 8.0,
+  "largeur": 4.0,
+  "profondeur": 1.5,
+  "rayonAngle": 0.4,
+  "margelle": { "largeur": 0.3, "epaisseur": 0.05, "couleur": "#d9cfbf", "matiere": "pierre claire" },
+  "escalier": { "type": "angle", "marches": 3 },
+  "eaux": { "bleu-clair": "#4fb3d9", "bleu-profond": "#1f6f9f", "gris-sable": "#8a9a9c" },
+  "eauParDefaut": "bleu-clair"
+}

@@ -1,0 +1,12 @@
+{
+  "id": "haricot-7x3-5",
+  "nom": "Forme libre 7 × 3,5 m",
+  "forme": "haricot",
+  "longueur": 7.0,
+  "largeur": 3.5,
+  "profondeur": 1.4,
+  "margelle": { "largeur": 0.3, "epaisseur": 0.05, "couleur": "#3b3f44", "matiere": "gris anthracite" },
+  "plageImmergee": { "longueur": 1.5, "profondeur": 0.2 },
+  "eaux": { "bleu-clair": "#4fb3d9", "bleu-profond": "#1f6f9f", "gris-sable": "#8a9a9c" },
+  "eauParDefaut": "bleu-profond"
+}
