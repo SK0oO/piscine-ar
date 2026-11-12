@@ -309,3 +309,11 @@ PLAN PRÊT
 - Événements : `detail.modele` = id (chaîne) ; `detail.mode` ∈ webxr | camera-gyro | sans-camera ; `model-changed.detail.pose` égal à `element.pose` ; `photo.detail = { blob, largeur, hauteur, modele }`.
 - Tous les textes visibles, vignettes comprises, font 16 px au minimum (la maquette V2 à 14 px sur les vignettes est corrigée par cette règle).
 - La page de test charge `/src/index.js` par import dynamique ; `src/index.js` doit définir l'élément à l'import.
+
+## 8. Noms fixés par les tests B (validés le 12/11/2026) — liste complète en tête de tests/unit/fakes/xr.js
+
+- Réticule : objet de `stage.scene` nommé `reticule`, `.visible`, placé à la position du hit.
+- Messages du calque créés par `env.document.createElement`, texte en `textContent` : « Balayez le sol », « Visez une zone contrastée », bouton « Recentrer ». Le message « Visez une zone contrastée » apparaît à partir de 5 000 ms sans sol (seuil inclusif), mesuré avec `performance.now()`.
+- Hit-tests : `requestReferenceSpace('viewer')`, `requestHitTestSource`, `requestHitTestSourceForTransientInput({ profile: 'generic-touchscreen' })` ; `place` utilise les résultats de la dernière image, hit tactile prioritaire. Ancre : `hit.createAnchor()`, suivie par `frame.getPose(ancre.anchorSpace, renderer.xr.getReferenceSpace())`, présence dans `frame.trackedAnchors` ; sans `anchors` dans `enabledFeatures`, pose du hit directe.
+- Occludeur reconnu dans `stage.scene` par `material.colorWrite === false && renderOrder === -1` ; `setModele` n'en laisse qu'un.
+- Le chargeur GLB refuse toute ressource externe (sécurité A2) : l'occludeur et l'ombre sont construits en géométrie native, jamais chargés.
