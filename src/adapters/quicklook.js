@@ -3,7 +3,8 @@ import { PiscineArError } from '../core/erreurs.js';
 const FRAGMENT = '#allowsContentScaling=0&callToAction=Revenir%20au%20site&checkoutTitle=';
 
 export function urlQuickLook(usdz, { titre }) {
-  return usdz + FRAGMENT + encodeURIComponent(titre);
+  const base = String(usdz).split('#')[0]; // un fragment déjà présent annulerait les paramètres Quick Look
+  return base + FRAGMENT + encodeURIComponent(titre);
 }
 
 export function supporte(document) {

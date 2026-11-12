@@ -41,6 +41,16 @@ describe('createWebxrAdaptateur — session', () => {
     await p;
   });
 
+  it('active renderer.xr avant setSession et le désactive à stop()', async () => {
+    const { deps } = creerDepsWebxr();
+    deps.renderer.xr.enabled = false;
+    const a = createWebxrAdaptateur(deps);
+    await a.start();
+    expect(deps.renderer.xr.enabled).toBe(true);
+    await a.stop();
+    expect(deps.renderer.xr.enabled).toBe(false);
+  });
+
   it('requestSession rejeté → start() rejette avec le code webxr-echec', async () => {
     const { deps } = creerDepsWebxr({ requestSession: () => Promise.reject(new Error('NotSupportedError')) });
     await expect(createWebxrAdaptateur(deps).start()).rejects.toMatchObject({ code: 'webxr-echec' });

@@ -13,10 +13,14 @@ export function createStage() {
   Object.assign(soleil.shadow.camera, { left: -8, right: 8, top: 8, bottom: -8, near: 0.5, far: 40 });
   soleil.position.set(3, 8, 4);
   scene.add(soleil);
+  scene.add(soleil.target);
   scene.add(pivot);
 
   const appliquerPose = ({ position, rotationY, scale }) => {
     pivot.position.set(position.x, position.y, position.z);
+    // le soleil et sa caméra d'ombre suivent la piscine
+    soleil.position.set(position.x + 3, position.y + 8, position.z + 4);
+    soleil.target.position.set(position.x, position.y, position.z);
     pivot.rotation.set(0, rotationY, 0);
     pivot.scale.setScalar(scale);
   };

@@ -331,12 +331,15 @@ export class PiscineAr extends HTMLElement {
       };
       adaptateur = mode === 'webxr' ? createWebxrAdaptateur(deps) : createCameraGyroAdaptateur(deps);
       this.#adaptateur = adaptateur;
+      const courant = this.#switcher.courant();
+      const modeleCourant = courant && this.#config.modeles.find((m) => m.id === courant.id);
+      // Le modèle par défaut s'est chargé pendant l'écran d'explication : l'adaptateur doit le connaître (occludeur en RA).
+      if (modeleCourant) adaptateur.setModele?.(modeleCourant, this.#stage.pivot.children[0]);
       if (mode === 'camera-gyro' && quickLookSupporte(document)) {
         this.#quicklook = createQuickLookAdaptateur({ calque: vue.lienRA, env: { document }, libelle: this.#textes.voirEnRA });
-        const courant = this.#switcher.courant();
-        const modeleCourant = courant && this.#config.modeles.find((m) => m.id === courant.id);
         if (modeleCourant) this.#quicklook.setModele(modeleCourant);
       }
+      this.#renderer.shadowMap.enabled = mode === 'webxr'; // seul le plan d'ombre de la RA reçoit des ombres
       adaptateur.onFrame(() => this.#rendre());
     } catch {
       this.#echec(new PiscineArError('modele-invalide', 'affichage 3D indisponible'));

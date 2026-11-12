@@ -28,6 +28,12 @@ function creer() {
 const lien = (calque) => trouver(calque, 'a')[0];
 
 describe('urlQuickLook', () => {
+  it('retire un fragment déjà présent dans l\'URL du usdz', () => {
+    const u = urlQuickLook('https://site.fr/p.usdz#x=1', { titre: 'T' });
+    expect(u.split('#').length).toBe(2);
+    expect(u.startsWith('https://site.fr/p.usdz#allowsContentScaling=0')).toBe(true);
+  });
+
   it('ajoute le fragment exact et encode le titre', () => {
     expect(urlQuickLook('https://exemple.invalid/rect.usdz', { titre: 'Ovale 5 & 3' })).toBe(
       `https://exemple.invalid/rect.usdz${FRAGMENT}${encodeURIComponent('Ovale 5 & 3')}`,

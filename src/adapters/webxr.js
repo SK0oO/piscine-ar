@@ -230,6 +230,9 @@ export function createWebxrAdaptateur(deps) {
     sourceTactile?.cancel?.();
     supprimerAncre();
     stage.scene.remove(reticule);
+    reticule.geometry.dispose();
+    reticule.material.dispose();
+    renderer.xr.enabled = false;
     retirerOcclusion();
     cacherMessage();
     boutonRecentrer?.remove();
@@ -276,6 +279,7 @@ export function createWebxrAdaptateur(deps) {
         }
         session.addEventListener('end', surEnd);
         capacites.photo = Boolean(session.enabledFeatures?.includes('camera-access'));
+        renderer.xr.enabled = true; // sans ça, render() ignore la caméra XR
         renderer.xr.setReferenceSpaceType('local');
         await renderer.xr.setSession(session);
         const viewer = await session.requestReferenceSpace('viewer');
