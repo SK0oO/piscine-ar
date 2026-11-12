@@ -1,0 +1,10 @@
+Projet : piscine-ar — dépôt /Users/alexandre/piscine-ar (lis CLAUDE.md, puis le plan technique docs/plans/2026-11-12-coeur-et-adaptateurs.md §1 « WebXR », « Occludeur », « Quick Look », §5, §8, §9)
+Étape : lots B et C + raccords — relecture indépendante
+Objectif : dire si src/adapters/webxr.js, src/core/occluder.js, src/adapters/quicklook.js et les modifications de src/ui/* et src/core/{renderer,stage,models}.js depuis le commit fcaa34b respectent le plan, CLAUDE.md et les tests.
+Savoir-faire : /Users/alexandre/Documents/Alex Cerveau/DREAM/_outils/plugins/dream-team/skills/feature/SKILL.md (étape 6)
+Entrées : `git diff fcaa34b HEAD -- src/` ; tests/unit/webxr.test.js, occluder.test.js, quicklook.test.js, fakes/xr.js, fakes/document.js ; tests/browser/quicklook.spec.js ; briefs docs/briefs/B-code.md et C-code.md.
+Contrôles à relancer : `npm test` (134/134) ; `npx playwright test --workers=1` (46 passés, 6 ignorés) ; `npx vite build`.
+Points d'attention : `requestSession` avant le premier await ; `end` → surFin une seule fois ; ancre précédente supprimée ; occludeur unique après setModele et recopie de la transformation du pivot à chaque image ; découpe du contour (le développeur a ajouté un sommet au milieu de chaque arête pour contourner une diagonale de triangulation : est-ce robuste ?) ; capture caméra en RA (`XRWebGLBinding.getCameraImage`, lecture des pixels, composition) ; lien Quick Look : exactement une `<img>` élément dans le `<a rel="ar">`, href mis à jour, caché sans usdz, jamais en webxr ; `masquer()` de « Figer » et « ↻ » ; ombres (castShadow sur les maillages chargés, shadow camera ±8 m suffit-elle pour une piscine de 8 m tournée ?) ; aucun innerHTML, aucune dépendance, tests intacts (`git diff fcaa34b HEAD -- tests/` = seulement les ajouts des testeurs et la ligne `waitFor` de ui.spec.js:20).
+Périmètre : lecture seule.
+Fini quand : verdict `OK`, `À CORRIGER` (fichier:ligne → attendu) ou `BLOQUANT`, commandes relancées et résultats.
+Retour : verdict en une ligne, 3 puces max, preuves.
