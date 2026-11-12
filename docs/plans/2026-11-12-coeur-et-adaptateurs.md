@@ -317,3 +317,11 @@ PLAN PRÊT
 - Hit-tests : `requestReferenceSpace('viewer')`, `requestHitTestSource`, `requestHitTestSourceForTransientInput({ profile: 'generic-touchscreen' })` ; `place` utilise les résultats de la dernière image, hit tactile prioritaire. Ancre : `hit.createAnchor()`, suivie par `frame.getPose(ancre.anchorSpace, renderer.xr.getReferenceSpace())`, présence dans `frame.trackedAnchors` ; sans `anchors` dans `enabledFeatures`, pose du hit directe.
 - Occludeur reconnu dans `stage.scene` par `material.colorWrite === false && renderOrder === -1` ; `setModele` n'en laisse qu'un.
 - Le chargeur GLB refuse toute ressource externe (sécurité A2) : l'occludeur et l'ombre sont construits en géométrie native, jamais chargés.
+
+## 9. Noms fixés par les tests C (validés le 12/11/2026)
+
+- `src/adapters/quicklook.js` exporte `urlQuickLook(usdz, { titre })`, `supporte(document)` et `createQuickLookAdaptateur(deps)` avec `deps = { calque, env: { document }, rendre, surFin }`.
+- Le lien est un `<a>` créé par `env.document.createElement('a')`, ajouté au `calque`, `setAttribute('rel', 'ar')`, propriétés `href` et `hidden`, contenant exactement une `<img>` (src = `modele.vignette`). `setModele(modele, racine)` lit `modele.usdz`, `modele.nom` (titre encodé) et `modele.vignette` ; sans `usdz`, `hidden = true`.
+- `mode = 'quicklook'`, `capacites = { echelle: false, photo: false }`, `place` → null, `capturer` rejette `photo-indisponible`.
+- Dans l'interface, le lien visible porte le texte « Échelle réelle » et reste visible en mode `camera-gyro` quand `supporte(document)` est vrai ; jamais en `webxr`.
+- Tests navigateur : `workers: 1` (fausse caméra partagée).
