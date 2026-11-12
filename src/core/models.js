@@ -47,6 +47,7 @@ export function createModelSwitcher({ pivot, charger }) {
       pivot.remove(courant.racine);
       liberer(courant.racine);
     }
+    racine.traverse((o) => { if (o.isMesh) o.castShadow = true; });
     pivot.add(racine);
     courant = { id: modele.id, dimensions, racine };
     return publique();

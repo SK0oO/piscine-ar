@@ -19,6 +19,7 @@ const tropPetits = (page) => page.evaluate(() => {
 
 test('écran d\'explication : tous les textes font 16 px ou plus', async ({ page }) => {
   await ouvrir(page);
+  await page.locator('piscine-ar').locator('button', { hasText: 'Activer la caméra' }).waitFor();
   const { verifies, fautifs } = await tropPetits(page);
   expect(verifies).toBeGreaterThan(2);
   expect(fautifs).toEqual([]);

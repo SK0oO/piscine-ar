@@ -47,6 +47,12 @@ async function lireConfig(url) {
 
 const attendre = (ms, valeur) => new Promise((resolve) => setTimeout(resolve, ms, valeur));
 
+const masquer = (el, oui) => {
+  if (!el) return;
+  el.hidden = oui;
+  el.style.display = oui ? 'none' : '';
+};
+
 export class PiscineAr extends HTMLElement {
   static observedAttributes = ['config'];
 
@@ -355,6 +361,11 @@ export class PiscineAr extends HTMLElement {
         setTimeout(resolve, IMAGE_DELAI_MS);
       });
       if (vie !== this.#vie || this.#adaptateur !== adaptateur) return;
+      // Capacités de l'adaptateur : pas de photo possible → « Figer » masqué ;
+      // en RA le calque porte déjà « Recentrer » → le « ↻ » de la barre est masqué.
+      const capacites = adaptateur.capacites ?? { echelle: true, photo: true };
+      masquer(this.#vue.figer, !capacites.photo);
+      masquer(this.#vue.recentrer, mode === 'webxr');
       this.#ecran?.remove();
       this.#ecran = null;
       this.#vue.racine.classList.remove('attente');

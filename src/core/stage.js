@@ -8,6 +8,9 @@ export function createStage() {
   pivot.name = 'pivot';
   scene.add(new THREE.HemisphereLight(0xffffff, 0x8a8a8a, 1.6));
   const soleil = new THREE.DirectionalLight(0xffffff, 1.4);
+  soleil.castShadow = true;
+  soleil.shadow.mapSize.set(1024, 1024);
+  Object.assign(soleil.shadow.camera, { left: -8, right: 8, top: 8, bottom: -8, near: 0.5, far: 40 });
   soleil.position.set(3, 8, 4);
   scene.add(soleil);
   scene.add(pivot);

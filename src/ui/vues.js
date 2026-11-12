@@ -82,5 +82,5 @@ export function vuePiscine({ config, textes, canvas, avecVideo, surVignette, sur
   barrePhoto.hidden = true;
 
   racine.append(gestes, calque, haut, barre, photo, bandeau, barrePhoto);
-  return { racine, video, calque, lienRA, gestes, cote, aide, vignettes, barre, barrePhoto, photo, bandeau };
+  return { racine, video, calque, lienRA, gestes, cote, aide, vignettes, barre, barrePhoto, photo, bandeau, figer, recentrer };
 }
