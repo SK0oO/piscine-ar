@@ -11,10 +11,18 @@ Deux choses à coller : UN script et UNE balise. Pas d'iframe.
 
 `<compte>` est le compte GitHub qui héberge le dépôt (à remplir quand il existe). Tout est en HTTPS : la caméra l'exige.
 
+## Où héberger le script (important)
+
+Le script s'exécute **dans le site du pisciniste**, avec les mêmes droits que ses propres pages. Il ne faut donc jamais le charger depuis une adresse qui peut changer sans qu'on le sache.
+
+Règle : **copier une version figée de `piscine-ar.js` et du dossier `models/out/` sur le site du pisciniste** (par exemple dans `/piscine-ar/`), et ne jamais pointer en direct vers `github.io`. L'adresse GitHub sert à la démo et à récupérer les fichiers, pas aux sites clients.
+
+Si, exceptionnellement, le script doit rester hébergé ailleurs : utiliser un chemin versionné qui ne change jamais (`/v1.0.0/piscine-ar.js`) et ajouter sur la balise `integrity="sha384-…"` (empreinte calculée avec `openssl dgst -sha384 -binary piscine-ar.js | openssl base64 -A`) et `crossorigin="anonymous"`. Le navigateur refuse alors tout fichier modifié.
+
 ## Le code à coller
 
 ```html
-<script type="module" src="https://<compte>.github.io/piscine-ar/piscine-ar.js"></script>
+<script type="module" src="/piscine-ar/piscine-ar.js"></script>
 <piscine-ar config="/piscine-ar/pisciniste.json" style="display:block;width:100%;height:80vh"></piscine-ar>
 ```
 
@@ -34,9 +42,9 @@ Deux choses à coller : UN script et UNE balise. Pas d'iframe.
     {
       "id": "rectangulaire-8x4",
       "nom": "Rectangulaire 8 × 4",
-      "glb": "https://<compte>.github.io/piscine-ar/models/out/rectangulaire-8x4.glb",
-      "usdz": "https://<compte>.github.io/piscine-ar/models/out/rectangulaire-8x4.usdz",
-      "vignette": "https://<compte>.github.io/piscine-ar/models/out/rectangulaire-8x4.png"
+      "glb": "/piscine-ar/models/out/rectangulaire-8x4.glb",
+      "usdz": "/piscine-ar/models/out/rectangulaire-8x4.usdz",
+      "vignette": "/piscine-ar/models/out/rectangulaire-8x4.png"
     }
   ],
   "modeleParDefaut": "rectangulaire-8x4"

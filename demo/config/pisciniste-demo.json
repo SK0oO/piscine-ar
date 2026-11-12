@@ -1,18 +1,23 @@
 {
   "version": 1,
-  "pisciniste": { "nom": "Piscines Dupont", "logo": null },
-  "couleurs": { "accent": "#1f6f9f" },
+  "pisciniste": {
+    "nom": "Piscines Dupont",
+    "logo": null
+  },
+  "couleurs": {
+    "accent": "#1f6f9f"
+  },
   "modeles": [
     {
       "id": "rectangulaire-8x4",
-      "nom": "Rectangulaire 8 × 4",
+      "nom": "Rectangle 8 × 4",
       "glb": "../../models/out/rectangulaire-8x4.glb",
       "usdz": "../../models/out/rectangulaire-8x4.usdz",
       "vignette": "../../models/out/rectangulaire-8x4.png"
     },
     {
       "id": "haricot-7x3-5",
-      "nom": "Forme libre 7 × 3,5",
+      "nom": "Haricot 7 × 3,5",
       "glb": "../../models/out/haricot-7x3-5.glb",
       "usdz": "../../models/out/haricot-7x3-5.usdz",
       "vignette": "../../models/out/haricot-7x3-5.png"

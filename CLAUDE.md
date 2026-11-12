@@ -25,3 +25,4 @@ src/core (scène, chargement, gestes, changement de modèle, capture) · src/ada
 - Interdit : envoyer la photo, la position ou toute donnée à un serveur ; cookies ; trackers.
 - Textes visibles en français, phrases courtes, 16 px minimum, lisibles en plein soleil (blanc sur fond sombre semi-opaque).
 - Commits : messages en français, un sujet par commit. Ne jamais pousser sans l'accord d'Alex.
+- `npm test` régénère `models/out/*.usdz` (octets non déterministes) : avant un commit, `git checkout -- models/out/*.usdz` sauf si les modèles ont vraiment changé.
