@@ -14,7 +14,7 @@ Recherche : /Users/alexandre/Documents/Alex Cerveau/DREAM/1-Projets/Piscine-AR/r
 src/core (scène, chargement, gestes, changement de modèle, capture) · src/adapters (webxr.js, camera-gyro.js, quicklook.js) · src/ui (composant `<piscine-ar>`, Shadow DOM) · src/config (JSON du pisciniste) · models/generate (paramètres → GLB + USDZ + PNG) · models/out · demo · tests/unit · tests/browser · docs/plans.
 
 ## Contrats
-- Adaptateur : `start()`, `stop()`, `place(x, y)`, `getPose()`, `onFrame(cb)`. Le cœur ignore la plateforme.
+- Adaptateur : `start()`, `stop()`, `place(x, y)`, `getPose()`, `onFrame(cb)`, plus `mode` ('webxr' | 'camera-gyro' | 'sans-camera' | 'quicklook'), `capacites` ({ echelle, photo }), `capturer({ largeur, hauteur })` → Blob PNG, `setModele(modele, racine)`. Le cœur ignore la plateforme. Détail : docs/plans/2026-11-12-coeur-et-adaptateurs.md.
 - Modèle : 1 unité = 1 mètre, origine au niveau supérieur de la margelle, axe Y vers le haut, < 20 000 triangles, GLB < 4 Mo.
 - Paramètres d'un modèle : `models/params/*.json` (longueur, largeur, profondeur, forme, rayon d'angle, margelle, couleurs d'eau).
 - Événements du composant : `piscine-ar:ready`, `piscine-ar:model-changed`, `piscine-ar:photo` (detail.blob PNG), `piscine-ar:error`.
