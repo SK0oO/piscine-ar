@@ -1,0 +1,8 @@
+Projet : piscine-ar — dépôt /Users/alexandre/piscine-ar (lis CLAUDE.md, puis le plan général §6, §7 : /Users/alexandre/Documents/Alex Cerveau/DREAM/1-Projets/Piscine-AR/plan.md)
+Étape : audit de sécurité de la livraison E6 (demo/* est un fichier sensible) et de la chaîne de déploiement
+Objectif : auditer demo/index.html, demo/demo.js, demo/config/pisciniste-demo.json, vite.config.js, vite.lib.config.js, .github/workflows/pages.yml, package.json/package-lock.json (dépendance `qrcode` 1.5.4 : réputation, mainteneur, scripts d'installation, dépendances transitives, `npm audit`), docs/integration.md (les conseils donnés à Maxime sont-ils sûrs : HTTPS, même origine, pas d'iframe, pas de CDN tiers, que faire de la photo côté site). Vérifier : aucune donnée (photo, position) ne quitte la page de démo ; le QR code est dessiné localement ; `location.href` n'est pas injecté dans le DOM autrement qu'en texte ; le workflow n'expose aucun secret, a des permissions minimales et des actions épinglées ; la supply chain du build (`npm ci` avec lock) ; la redirection `dist/index.html` → `demo/` n'est pas une redirection ouverte.
+Savoir-faire : /Users/alexandre/Documents/Alex Cerveau/DREAM/_outils/plugins/dream-team/skills/feature/SKILL.md (étape 6)
+Contrôles : `npm audit` (complet, dev inclus, rapporter tel quel) ; `npm ls qrcode` ; recherche de `innerHTML|outerHTML|insertAdjacentHTML|eval(|Function(|XMLHttpRequest|sendBeacon|localStorage|document.cookie|WebSocket|postMessage|fetch(|http://` dans demo/ et .github/.
+Périmètre : lecture seule.
+Fini quand : verdict `OK`, `À CORRIGER` (fichier:ligne → risque → correctif) ou `BLOQUANT`, résultat des contrôles.
+Retour : verdict en une ligne, 3 puces max, preuves.
