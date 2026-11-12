@@ -289,3 +289,14 @@ Fichiers sensibles qui déclenchent dev-securite à chaque lot : `src/adapters/*
    - Ces cinq points sont les premières lignes de la grille E6, vérifiées sur un vrai téléphone.
 
 PLAN PRÊT
+
+## 6. Précisions d'API fixées par les tests A1 (validées le 12/11/2026, font partie du contrat)
+
+- `createGestureTracker().handle(evt)` renvoie un tableau d'intentions (vide si rien).
+- `createStage()` renvoie `{ scene, camera, pivot, appliquerPose(pose) }`.
+- `createModelSwitcher({ pivot, charger })` : `selectionner(modele)` appelle `charger(modele.glb)` ; `courant()` renvoie `{ id, dimensions }` ou `null`.
+- `coverRect(srcW, srcH, dstW, dstH)` renvoie `{ sx, sy, sw, sh }` (recadrage source façon `object-fit: cover`).
+- `orientationToQuaternion(alpha, beta, gamma, angleEcran, alphaRef)` prend des degrés et renvoie `{ x, y, z, w }`.
+- `parseConfig` est synchrone (le `fetch` est fait par l'élément).
+- `PiscineArError` vit dans `src/core/erreurs.js`.
+- Dimensions : `longueur` = taille en X, `largeur` = taille en Z de la boîte englobante du nœud `eau`.
