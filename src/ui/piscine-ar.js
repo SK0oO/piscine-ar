@@ -24,7 +24,7 @@ const IMAGE_DELAI_MS = 1_500;
 async function lireConfig(url) {
   const invalide = (raison) => new PiscineArError('config-invalide', raison);
   try {
-    const reponse = await fetch(url, { credentials: 'omit', signal: AbortSignal.timeout(CONFIG_DELAI_MS) });
+    const reponse = await fetch(url, { credentials: 'omit', redirect: 'error', signal: AbortSignal.timeout(CONFIG_DELAI_MS) });
     if (!reponse.ok) throw invalide(`configuration introuvable (${reponse.status})`);
     const lecteur = reponse.body.getReader();
     const morceaux = [];
@@ -197,6 +197,8 @@ export class PiscineAr extends HTMLElement {
   }
 
   #retirerVue() {
+    if (this.#urlPhoto) URL.revokeObjectURL(this.#urlPhoto);
+    this.#urlPhoto = null;
     this.#adaptateur?.stop();
     this.#adaptateur = null;
     this.#vue?.racine.remove();
