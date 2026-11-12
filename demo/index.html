@@ -1,2 +1,55 @@
-<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>piscine-ar</title></head>
-<body style="font-family:system-ui;background:#0f1419;color:#fff;margin:0;padding:24px"><p>piscine-ar ok</p></body></html>
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Piscines Dupont — Voyez votre piscine dans votre jardin</title>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #0f1419; color: #fff; font: 16px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  main { max-width: 960px; margin: 0 auto; padding: 24px 16px 48px; }
+  h1 { font-size: 28px; line-height: 1.2; margin: 0 0 8px; }
+  .intro { margin: 0 0 24px; font-size: 18px; color: #d5dde4; }
+  piscine-ar { display: block; width: 100%; max-width: 420px; margin: 0 auto; aspect-ratio: 9 / 16; max-height: 82vh;
+    border-radius: 20px; overflow: hidden; background: #000; }
+  section { max-width: 420px; margin: 24px auto 0; padding: 16px; border-radius: 16px; background: rgba(255, 255, 255, 0.08); }
+  h2 { font-size: 18px; margin: 0 0 8px; }
+  #photo-vue { display: block; width: 100%; border-radius: 12px; margin: 0 0 12px; }
+  button { font: inherit; font-weight: 600; color: #0f1419; background: #fff; border: 0; border-radius: 14px; padding: 14px 18px; min-height: 48px; cursor: pointer; }
+  #devis-message { margin: 12px 0 0; }
+  #qr { text-align: center; }
+  #qr canvas { background: #fff; padding: 8px; border-radius: 12px; max-width: 100%; }
+  #qr p { margin: 8px 0 0; }
+  [hidden] { display: none !important; }
+  @media (max-width: 600px) {
+    main { padding: 12px 0 32px; }
+    h1, .intro { padding: 0 16px; }
+    piscine-ar { max-width: none; max-height: none; height: 78vh; height: 78svh; border-radius: 0; }
+    section { margin-left: 16px; margin-right: 16px; }
+    #qr { display: none; }
+  }
+</style>
+</head>
+<body>
+<main>
+  <h1>Piscines Dupont — Voyez votre piscine dans votre jardin</h1>
+  <p class="intro">Ouvrez la caméra, posez la piscine devant vous, changez de modèle et gardez une photo.</p>
+
+  <piscine-ar config="config/pisciniste-demo.json"></piscine-ar>
+
+  <section id="devis" hidden>
+    <h2>Votre photo</h2>
+    <img id="photo-vue" alt="Votre jardin avec la piscine">
+    <button id="devis-bouton" type="button">Recevoir un devis avec cette photo</button>
+    <p id="devis-message" role="status" hidden>Ici, le site du pisciniste reçoit la photo.</p>
+  </section>
+
+  <section id="qr">
+    <h2>Sur ordinateur ? Passez sur votre téléphone</h2>
+    <canvas id="qr-canvas" width="200" height="200" role="img" aria-label="QR code de cette page"></canvas>
+    <p>Flashez ce code avec l'appareil photo de votre téléphone.</p>
+  </section>
+</main>
+<script type="module" src="./demo.js"></script>
+</body>
+</html>
