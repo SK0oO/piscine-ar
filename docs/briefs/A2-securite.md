@@ -1,0 +1,8 @@
+Projet : piscine-ar — dépôt /Users/alexandre/piscine-ar (lis CLAUDE.md, puis le plan technique docs/plans/2026-11-12-coeur-et-adaptateurs.md §1 « Élément », « JSON du pisciniste », §5)
+Étape : lot A2 — audit de sécurité du composant dans le navigateur
+Objectif : auditer src/ui/piscine-ar.js, src/ui/vues.js, src/core/loader.js, src/adapters/camera-gyro.js, src/index.js (diff du commit « A2 : composant »), en partant de la liste « Non vérifié » de l'audit A1 : le `fetch(config, { credentials:'omit' })` ; construction de `originesAutorisees` (location.origin + origine de import.meta.url) ; origine de l'attribut `config` lui-même ; plafond de taille avant JSON.parse ; textes uniquement en textContent ; chargement des GLB (plafond, délai, origine) ; URL d'objets révoquées ; aucune donnée (photo, position, orientation) ne quitte la page ; permissions caméra et mouvement demandées une fois, dans un geste ; comportement si la page hôte est elle-même hostile (le composant ne doit pas donner plus que ce que la page a déjà) ; `download` de la photo sans navigation.
+Savoir-faire : /Users/alexandre/Documents/Alex Cerveau/DREAM/_outils/plugins/dream-team/skills/feature/SKILL.md (étape 6)
+Contrôles : `npm test` (87/87) ; `npm audit --omit=dev` ; recherche de `innerHTML|outerHTML|insertAdjacentHTML|eval(|Function(|XMLHttpRequest|sendBeacon|localStorage|document.cookie|WebSocket|postMessage` dans src/ ; `fetch(` doit n'apparaître que dans loader.js et piscine-ar.js (config).
+Périmètre : lecture seule.
+Fini quand : verdict `OK`, `À CORRIGER` (fichier:ligne → risque → correctif) ou `BLOQUANT`, résultat des contrôles.
+Retour : verdict en une ligne, 3 puces max, preuves.

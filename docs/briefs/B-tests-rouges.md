@@ -1,0 +1,10 @@
+Projet : piscine-ar — dépôt /Users/alexandre/piscine-ar (lis CLAUDE.md, puis le plan technique EN ENTIER : docs/plans/2026-11-12-coeur-et-adaptateurs.md, §1 « WebXR », « Occludeur », §2 lot B, §3 « B » tests 18 et 19, §6, §7)
+Étape : lot B — adaptateur WebXR Android et occludeur, mode ROUGE
+Objectif : écrire tests/unit/webxr.test.js (test 18 : tous les cas listés, avec faux `xr`, fausse `XRSession`, faux `renderer.xr`, faux résultats de hit-test et d'ancres dans tests/unit/fakes/xr.js) et tests/unit/occluder.test.js (test 19 : tous les cas listés, en construisant des maillages `margelle` de test dont une forme en C ; rayons avec THREE.Raycaster), qui échouent parce que src/core/occluder.js n'existe pas et que src/adapters/webxr.js n'est qu'un bouchon (son `start()` rejette toujours).
+Savoir-faire : /Users/alexandre/Documents/Alex Cerveau/DREAM/_outils/plugins/dream-team/skills/feature/SKILL.md (étape 3)
+Entrées : src/adapters/webxr.js actuel (bouchon, pour connaître le nom exporté `createWebxrAdaptateur` et la forme de `deps`) ; src/adapters/camera-gyro.js et tests/unit/camera-gyro.test.js (même contrat d'adaptateur, même style de faux) ; src/core/pose.js, src/core/stage.js.
+Règles : environnement node, sans WebGL ; `renderer.xr` factice avec `setSession`, `getReferenceSpace`, `setReferenceSpaceType` ; `setAnimationLoop(cb)` factice qui garde `cb` pour que le test déclenche des images avec une fausse `XRFrame` (`getHitTestResults`, `getHitTestResultsForTransientInput`, `trackedAnchors`, `getPose`).
+Déjà exclu : tests navigateur (pas de WebXR sous Playwright) ; lot C.
+Périmètre : tu écris SEULEMENT dans tests/unit/ (fichiers nouveaux : webxr.test.js, occluder.test.js, fakes/xr.js). Rien dans src/.
+Fini quand : `npm test` → les 87 tests existants toujours verts, les deux nouveaux fichiers en échec pour module absent (occluder) ou pour comportement absent (webxr bouchon). Donne la commande exacte et les comptes.
+Retour : verdict `ROUGE CONFIRMÉ` ou `BLOQUÉ`, 3 puces max, chemins, noms d'API que tu as dû fixer.
