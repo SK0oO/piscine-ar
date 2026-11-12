@@ -1,0 +1,25 @@
+// Textes français par défaut. Le JSON du pisciniste peut remplacer les clés connues (config.js).
+export const TEXTES = Object.freeze({
+  titre: 'Voyez votre piscine dans votre jardin',
+  explication: "On va activer la caméra et le capteur de mouvement de votre téléphone. Rien n'est envoyé ni enregistré : tout reste sur votre appareil.",
+  autoriser: 'Activer la caméra',
+  reessayer: 'Réessayer',
+  voirSansCamera: 'Voir sans caméra',
+  lancerCamera: 'Lancer la caméra',
+  figer: 'Figer',
+  enregistrer: 'Enregistrer',
+  reprendre: 'Reprendre',
+  recentrer: 'Recentrer',
+  balayerSol: 'Balayez le sol',
+  viserContraste: 'Visez une zone contrastée',
+  voirEnRA: 'Échelle réelle',
+  // Textes sans clé dans le JSON du pisciniste.
+  chargement: 'Chargement…',
+  aide: 'Glissez pour déplacer · deux doigts pour tourner',
+  photoPrete: 'Votre photo est prête',
+  erreurCameraRefusee: "L'accès à la caméra a été refusé. Autorisez-le puis réessayez, ou voyez la piscine sans caméra.",
+  erreurCameraIndisponible: "La caméra n'est pas disponible sur cet appareil.",
+  erreurModele: "La piscine n'a pas pu être chargée. Réessayez.",
+  erreurConfig: "Le visualiseur n'est pas configuré correctement.",
+  erreurAffichage: "L'affichage 3D n'est pas disponible sur cet appareil.",
+});
