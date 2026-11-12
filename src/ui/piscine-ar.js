@@ -2,7 +2,7 @@ import { parseConfig } from '../config/config.js';
 import { choisirMode } from '../adapters/choisir.js';
 import { createCameraGyroAdaptateur } from '../adapters/camera-gyro.js';
 import { createWebxrAdaptateur } from '../adapters/webxr.js';
-import { supporte as quickLookSupporte } from '../adapters/quicklook.js';
+import { supporte as quickLookSupporte, createQuickLookAdaptateur } from '../adapters/quicklook.js';
 import { PiscineArError } from '../core/erreurs.js';
 import { createStage } from '../core/stage.js';
 import { createPoseStore, POSE_DEPART } from '../core/pose.js';
@@ -64,6 +64,7 @@ export class PiscineAr extends HTMLElement {
   #renderer = null;
   #observeur = null;
   #adaptateur = null;
+  #quicklook = null;
   #vue = null;
   #ecran = null;
   #occupe = false;
@@ -201,6 +202,7 @@ export class PiscineAr extends HTMLElement {
     this.#urlPhoto = null;
     this.#adaptateur?.stop();
     this.#adaptateur = null;
+    this.#quicklook = null;
     this.#vue?.racine.remove();
     this.#vue = null;
     this.#gele = false;
@@ -243,6 +245,7 @@ export class PiscineAr extends HTMLElement {
       if (!res || vie !== this.#vie) return null;
       this.#dimensions = res.dimensions;
       this.#adaptateur?.setModele(modele, this.#stage.pivot.children[0] ?? null);
+      this.#quicklook?.setModele(modele);
       this.#majCote();
       this.#majVignettes();
       return res;
@@ -322,6 +325,12 @@ export class PiscineAr extends HTMLElement {
       };
       adaptateur = mode === 'webxr' ? createWebxrAdaptateur(deps) : createCameraGyroAdaptateur(deps);
       this.#adaptateur = adaptateur;
+      if (mode === 'camera-gyro' && quickLookSupporte(document)) {
+        this.#quicklook = createQuickLookAdaptateur({ calque: vue.lienRA, env: { document }, libelle: this.#textes.voirEnRA });
+        const courant = this.#switcher.courant();
+        const modeleCourant = courant && this.#config.modeles.find((m) => m.id === courant.id);
+        if (modeleCourant) this.#quicklook.setModele(modeleCourant);
+      }
       adaptateur.onFrame(() => this.#rendre());
     } catch {
       this.#echec(new PiscineArError('modele-invalide', 'affichage 3D indisponible'));

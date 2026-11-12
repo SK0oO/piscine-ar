@@ -70,7 +70,8 @@ export function vuePiscine({ config, textes, canvas, avecVideo, surVignette, sur
   }
   const figer = bouton(textes.figer, 'btn principal', surFiger);
   const recentrer = bouton('↻', 'btn rond', surRecentrer, { 'aria-label': textes.recentrer });
-  const barre = protegerXr(el('div', { classe: 'bas' }, aide, modeles, el('div', { classe: 'boutons' }, recentrer, figer)));
+  const lienRA = el('div', { classe: 'lien-ra', role: 'lien-ra' });
+  const barre = protegerXr(el('div', { classe: 'bas' }, aide, modeles, el('div', { classe: 'boutons' }, recentrer, lienRA, figer)));
 
   const photo = el('img', { role: 'photo', attrs: { alt: '' } });
   photo.hidden = true;
@@ -81,5 +82,5 @@ export function vuePiscine({ config, textes, canvas, avecVideo, surVignette, sur
   barrePhoto.hidden = true;
 
   racine.append(gestes, calque, haut, barre, photo, bandeau, barrePhoto);
-  return { racine, video, calque, gestes, cote, aide, vignettes, barre, barrePhoto, photo, bandeau };
+  return { racine, video, calque, lienRA, gestes, cote, aide, vignettes, barre, barrePhoto, photo, bandeau };
 }
