@@ -26,7 +26,10 @@ export function createModelSwitcher({ pivot, charger }) {
   const publique = () => (courant ? { id: courant.id, dimensions: { ...courant.dimensions } } : null);
 
   async function selectionner(modele) {
-    if (courant && courant.id === modele.id) return publique();
+    if (courant && courant.id === modele.id) {
+      jeton++; // le dernier appel gagne : un chargement en vol est jeté
+      return publique();
+    }
     const moi = ++jeton;
     let racine;
     try {

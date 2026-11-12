@@ -87,6 +87,25 @@ describe('createModelSwitcher', () => {
     expect(sw.courant().id).toBe('ovale-5x3');
   });
 
+  it('B en vol puis A (courant) : B est jeté, le courant reste A', async () => {
+    const { pivot, ch, sw } = setup();
+    const racineA = fabriquerModele({ longueur: 8, largeur: 4 });
+    const pA = sw.selectionner(A);
+    ch.dernier(A.glb).resolve(racineA);
+    await pA;
+    const pB = sw.selectionner(B);
+    const resA2 = await sw.selectionner(A); // dernier appel : A, déjà courant
+    const racineB = fabriquerModele({ longueur: 5, largeur: 3 });
+    ch.dernier(B.glb).resolve(racineB);
+    const resB = await pB;
+    await tick();
+    expect(resA2.id).toBe('rect-8x4');
+    expect(resB).toBeNull();
+    expect(pivot.children).toEqual([racineA]);
+    expect(estLibere(racineB)).toBe(true);
+    expect(sw.courant().id).toBe('rect-8x4');
+  });
+
   it('en cas d\'échec : erreur modele-introuvable et le modèle précédent reste', async () => {
     const { pivot, ch, sw } = setup();
     const racineA = fabriquerModele();

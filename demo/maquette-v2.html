@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Maquette V2 — interface piscine-ar</title>
+<style>
+  :root { --accent:#1f6f9f; --fond:rgba(15,20,25,.72); --blanc:#fff; }
+  * { box-sizing:border-box; }
+  body { margin:0; padding:32px; background:#e9e6df; font-family:-apple-system,"Segoe UI",system-ui,sans-serif; color:#222; }
+  h1 { font-size:22px; margin:0 0 6px; }
+  p.sous { margin:0 0 24px; color:#555; font-size:15px; }
+  .ecrans { display:flex; gap:28px; align-items:flex-start; }
+  .ecran { width:390px; }
+  .ecran h2 { font-size:15px; margin:0 0 10px; color:#333; font-weight:600; }
+  .tel { position:relative; width:390px; height:844px; border-radius:44px; overflow:hidden; background:#000; box-shadow:0 20px 40px rgba(0,0,0,.25); border:10px solid #111; }
+  .encoche { position:absolute; top:12px; left:50%; transform:translateX(-50%); width:120px; height:34px; background:#111; border-radius:20px; z-index:9; }
+  /* fond « jardin » */
+  .jardin { position:absolute; inset:0; background:
+     linear-gradient(180deg,#9fc6e8 0%,#cfe3f2 38%,#cfe3f2 40%,#6f9a4e 41%,#5c8a3f 70%,#4f7a36 100%); }
+  .haie { position:absolute; left:0; right:0; top:36%; height:7%; background:linear-gradient(180deg,#3f6b2c,#2f5420); }
+  .maison { position:absolute; left:62%; top:24%; width:30%; height:14%; background:#d8cbb6; border-top:26px solid #8b5a3c; }
+  .terrasse { position:absolute; left:0; right:0; bottom:0; height:12%; background:#b9ad99; }
+  /* piscine posée en perspective */
+  .piscine { position:absolute; left:50%; top:58%; width:300px; height:150px; transform:translate(-50%,-50%) perspective(600px) rotateX(58deg); border-radius:26px; background:#d9cfbf; padding:14px; box-shadow:0 30px 40px rgba(0,0,0,.25); }
+  .piscine .eau { width:100%; height:100%; border-radius:16px; background:radial-gradient(ellipse at 40% 30%,#7fd0ea,#3aa3c8 70%); box-shadow:inset 0 8px 18px rgba(0,0,0,.35); }
+  .cote { position:absolute; left:50%; top:46%; transform:translateX(-50%); background:var(--fond); color:#fff; font-size:16px; padding:6px 12px; border-radius:10px; }
+  /* interface */
+  .haut { position:absolute; top:60px; left:16px; right:16px; display:flex; justify-content:space-between; align-items:center; z-index:5; }
+  .pastille { background:var(--fond); color:#fff; font-size:16px; padding:10px 14px; border-radius:14px; }
+  .fermer { background:var(--fond); color:#fff; width:44px; height:44px; border-radius:22px; display:grid; place-items:center; font-size:22px; }
+  .bas { position:absolute; left:0; right:0; bottom:0; padding:14px 16px 28px; background:linear-gradient(180deg,transparent,rgba(15,20,25,.85) 40%); z-index:5; }
+  .modeles { display:flex; gap:12px; margin-bottom:14px; }
+  .modele { flex:1; background:rgba(255,255,255,.12); border:2px solid transparent; border-radius:16px; padding:8px; color:#fff; text-align:center; font-size:14px; }
+  .modele img { width:100%; height:64px; object-fit:cover; border-radius:10px; display:block; margin-bottom:6px; }
+  .modele.actif { border-color:#fff; background:rgba(255,255,255,.22); }
+  .boutons { display:flex; gap:12px; }
+  .btn { flex:1; height:56px; border-radius:18px; display:grid; place-items:center; font-size:17px; font-weight:600; color:#fff; background:rgba(255,255,255,.18); }
+  .btn.principal { background:#fff; color:#111; }
+  .btn.rond { flex:0 0 56px; }
+  .aide { position:absolute; left:50%; bottom:250px; transform:translateX(-50%); background:var(--fond); color:#fff; font-size:16px; padding:10px 16px; border-radius:14px; white-space:nowrap; z-index:5; }
+  /* écran 1 : explication */
+  .expli { position:absolute; inset:0; background:#0f1419; color:#fff; display:flex; flex-direction:column; justify-content:flex-end; padding:28px 24px 44px; }
+  .expli .illu { position:absolute; left:0; right:0; top:0; height:50%; background:linear-gradient(180deg,#9fc6e8,#5c8a3f); opacity:.9; }
+  .expli .illu .piscine { top:60%; width:220px; height:110px; }
+  .expli h3 { font-size:26px; margin:0 0 10px; line-height:1.2; }
+  .expli p { font-size:17px; line-height:1.45; margin:0 0 22px; color:#d7dde3; }
+  .expli .btn { flex:0 0 56px; width:100%; margin-bottom:12px; }
+  .expli h3, .expli p, .expli .lien { position:relative; z-index:2; }
+  .expli .lien { text-align:center; color:#9fb3c4; font-size:16px; }
+  /* écran 3 : réticule android */
+  .reticule { position:absolute; left:50%; top:58%; width:90px; height:46px; transform:translate(-50%,-50%) perspective(500px) rotateX(60deg); border:3px solid #fff; border-radius:50%; box-shadow:0 0 0 6px rgba(255,255,255,.25); }
+  /* écran 4 : photo figée */
+  .fige { position:absolute; inset:0; outline:6px solid #fff; outline-offset:-6px; }
+  .bandeau { position:absolute; top:60px; left:16px; right:16px; z-index:6; text-align:center; }
+  .legende { margin-top:16px; font-size:13px; color:#666; line-height:1.4; }
+</style>
+</head>
+<body>
+<h1>Maquette V2 — l'interface « Voir la piscine dans mon jardin »</h1>
+<p class="sous">Quatre écrans, taille iPhone (390 × 844). Les couleurs d'accent et le logo viennent du pisciniste. Textes 16 px minimum, blanc sur fond sombre semi-opaque.</p>
+<div class="ecrans">
+
+  <div class="ecran">
+    <h2>1. Avant la caméra</h2>
+    <div class="tel"><div class="encoche"></div>
+      <div class="expli">
+        <div class="illu"><div class="piscine"><div class="eau"></div></div></div>
+        <h3>Voyez votre piscine dans votre jardin</h3>
+        <p>On va activer la caméra et le capteur de mouvement de votre téléphone. Rien n'est envoyé ni enregistré : tout reste sur votre appareil.</p>
+        <div class="btn principal">Activer la caméra</div>
+        <div class="lien">Voir sans caméra</div>
+      </div>
+    </div>
+    <div class="legende">Une phrase d'explication avant la demande du téléphone. Le lien du bas ouvre la piscine en 3D sur fond neutre si on refuse.</div>
+  </div>
+
+  <div class="ecran">
+    <h2>2. Vue caméra (iPhone et Android)</h2>
+    <div class="tel"><div class="encoche"></div>
+      <div class="jardin"><div class="haie"></div><div class="maison"></div><div class="terrasse"></div></div>
+      <div class="piscine"><div class="eau"></div></div>
+      <div class="cote">8,0 × 4,0 m</div>
+      <div class="haut"><div class="pastille">Piscines Dupont</div><div class="fermer">×</div></div>
+      <div class="aide">Glissez pour déplacer · deux doigts pour tourner</div>
+      <div class="bas">
+        <div class="modeles">
+          <div class="modele actif"><img src="../models/out/rectangulaire-8x4.png" alt="">Rectangulaire 8 × 4</div>
+          <div class="modele"><img src="../models/out/haricot-7x3-5.png" alt="">Forme libre 7 × 3,5</div>
+          <div class="modele"><img src="../models/out/ovale-5x3.png" alt="">Ovale 5 × 3</div>
+        </div>
+        <div class="boutons">
+          <div class="btn rond">↻</div>
+          <div class="btn principal">Figer</div>
+          <div class="btn">Échelle réelle</div>
+        </div>
+      </div>
+    </div>
+    <div class="legende">La caméra reste active. Barre de modèles : toucher une vignette remplace la piscine sans bouger. « ↻ » recentre. « Échelle réelle » n'apparaît que sur iPhone (ouvre la visionneuse Apple). La cote en mètres s'affiche pendant le pincement.</div>
+  </div>
+
+  <div class="ecran">
+    <h2>3. Pose au sol (Android)</h2>
+    <div class="tel"><div class="encoche"></div>
+      <div class="jardin"><div class="haie"></div><div class="maison"></div><div class="terrasse"></div></div>
+      <div class="reticule"></div>
+      <div class="haut"><div class="pastille">Piscines Dupont</div><div class="fermer">×</div></div>
+      <div class="aide">Balayez lentement le sol, puis touchez pour poser</div>
+      <div class="bas">
+        <div class="modeles">
+          <div class="modele actif"><img src="../models/out/rectangulaire-8x4.png" alt="">Rectangulaire 8 × 4</div>
+          <div class="modele"><img src="../models/out/haricot-7x3-5.png" alt="">Forme libre 7 × 3,5</div>
+          <div class="modele"><img src="../models/out/ovale-5x3.png" alt="">Ovale 5 × 3</div>
+        </div>
+        <div class="boutons">
+          <div class="btn rond">↻</div>
+          <div class="btn principal">Figer</div>
+        </div>
+      </div>
+    </div>
+    <div class="legende">Sur Android, un réticule blanc cherche le sol. Après 5 s sans sol : « Visez une zone contrastée ». Pas de bouton « Échelle réelle » : la taille est déjà vraie.</div>
+  </div>
+
+  <div class="ecran">
+    <h2>4. Photo figée</h2>
+    <div class="tel"><div class="encoche"></div>
+      <div class="jardin"><div class="haie"></div><div class="maison"></div><div class="terrasse"></div></div>
+      <div class="piscine"><div class="eau"></div></div>
+      <div class="fige"></div>
+      <div class="bandeau"><span class="pastille">Votre photo est prête</span></div>
+      <div class="bas">
+        <div class="boutons">
+          <div class="btn">Reprendre</div>
+          <div class="btn principal">Enregistrer</div>
+        </div>
+        <div style="height:12px"></div>
+        <div class="boutons"><div class="btn" style="background:var(--accent)">Recevoir un devis avec cette photo</div></div>
+      </div>
+    </div>
+    <div class="legende">Image figée, liseré blanc. « Enregistrer » télécharge la photo. Le bouton bleu du bas est celui du site de Maxime : il reçoit la photo par l'événement « photo prête ».</div>
+  </div>
+
+</div>
+</body>
+</html>
