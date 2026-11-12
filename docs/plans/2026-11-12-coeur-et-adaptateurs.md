@@ -300,3 +300,12 @@ PLAN PRÊT
 - `parseConfig` est synchrone (le `fetch` est fait par l'élément).
 - `PiscineArError` vit dans `src/core/erreurs.js`.
 - Dimensions : `longueur` = taille en X, `largeur` = taille en Z de la boîte englobante du nœud `eau`.
+
+## 7. Noms d'interface fixés par les tests A2 (validés le 12/11/2026, font partie du contrat)
+
+- `src/adapters/camera-gyro.js` exporte `createCameraGyroAdaptateur(deps)`. Orientation lue sur `deviceorientation` de `env.window`, angle d'écran via `env.window.screen.orientation.angle`, `requestPermission` lu sur `env.window.DeviceOrientationEvent` et appelé avant `getUserMedia` ; `play()` part de façon synchrone dans `start()` ; `stop()` fait `setAnimationLoop(null)` et retire les écouteurs.
+- Shadow DOM : surface de gestes `[data-role="gestes"]` ; cote `[data-role="cote"]` (« 12,0 × 6,0 m ») ; vignettes `button[data-modele="<id>"]` dans l'ordre du JSON ; photo figée `img[data-role="photo"]` ; texte d'explication contenant « Rien n'est envoyé ».
+- Boutons par texte visible : « Activer la caméra » (bouton de démarrage unique, tous modes), « Voir sans caméra », « Lancer la caméra », « Figer », « Enregistrer », « Reprendre ». Plus « Échelle réelle » (lot C) et « ↻ » recentrer.
+- Événements : `detail.modele` = id (chaîne) ; `detail.mode` ∈ webxr | camera-gyro | sans-camera ; `model-changed.detail.pose` égal à `element.pose` ; `photo.detail = { blob, largeur, hauteur, modele }`.
+- Tous les textes visibles, vignettes comprises, font 16 px au minimum (la maquette V2 à 14 px sur les vignettes est corrigée par cette règle).
+- La page de test charge `/src/index.js` par import dynamique ; `src/index.js` doit définir l'élément à l'import.

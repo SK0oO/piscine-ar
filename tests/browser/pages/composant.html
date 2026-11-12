@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Page de test — piscine-ar</title>
+<style>html, body { margin: 0; height: 100%; } piscine-ar { display: block; width: 100%; height: 100vh; }</style>
+<script>
+  // Capture des événements du composant (tableaux globaux lus par les specs). Les Blob sont gardés à part.
+  window.__evts = [];
+  window.__blobs = [];
+  for (const type of ['ready', 'model-changed', 'photo', 'error']) {
+    document.addEventListener('piscine-ar:' + type, (e) => {
+      const d = e.detail || {};
+      const copie = { type, ...d };
+      if (d.blob) { window.__blobs.push(d.blob); copie.blob = { type: d.blob.type, size: d.blob.size }; copie.indexBlob = window.__blobs.length - 1; }
+      window.__evts.push(copie);
+    });
+  }
+</script>
+</head>
+<body>
+<script type="module">
+  // `import()` dynamique : si le fichier manque, l'erreur est lisible par les specs (window.__chargement).
+  // Chemin dans une variable : Vite n'analyse pas l'import à l'avance, l'erreur arrive à l'exécution.
+  const chemin = '/src/index.js';
+  import(/* @vite-ignore */ chemin).then(
+    () => { window.__chargement = 'ok'; },
+    (e) => { window.__chargement = 'erreur : ' + (e && e.message); },
+  );
+</script>
+<piscine-ar config="../fixtures/piscinier.json"></piscine-ar>
+</body>
+</html>
