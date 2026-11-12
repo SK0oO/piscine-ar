@@ -108,7 +108,9 @@ async function charge(id, eau) {
     const b = document.createElement('button');
     b.type = 'button';
     b.dataset.eau = nom;
-    b.innerHTML = `<i style="background:${hex}"></i>${NOMS_EAUX[nom] || nom}`;
+    const pastille = document.createElement('i');
+    pastille.style.background = hex;
+    b.append(pastille, document.createTextNode(NOMS_EAUX[nom] || nom));
     b.addEventListener('click', () => appliqueEau(nom));
     zoneEaux.append(b);
   }
