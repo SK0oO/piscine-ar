@@ -323,6 +323,12 @@ export function createWebxrAdaptateur(deps) {
     return poser(choix.hit, choix.position);
   }
 
+  // « Fixer au sol » : pose au centre de l'écran (le réticule), même effet que le tap sur le réticule.
+  function fixerAuSol() {
+    if (!dernierReticule || fini) return null;
+    return poser(dernierReticule.hit, dernierReticule.position);
+  }
+
   function recentrer() {
     if (dernierReticule && !fini) poser(dernierReticule.hit, dernierReticule.position);
   }
@@ -333,6 +339,7 @@ export function createWebxrAdaptateur(deps) {
     start,
     stop,
     place,
+    fixerAuSol,
     getPose: () => pose.get(),
     onFrame(cb) {
       abonnes.add(cb);

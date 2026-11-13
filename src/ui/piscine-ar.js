@@ -252,6 +252,7 @@ export class PiscineAr extends HTMLElement {
       this.#dimensions = res.dimensions;
       this.#adaptateur?.setModele(modele, this.#stage.pivot.children[0] ?? null);
       this.#quicklook?.setModele(modele);
+      this.#majPrincipal();
       this.#majCote();
       this.#majVignettes();
       return res;
@@ -275,6 +276,17 @@ export class PiscineAr extends HTMLElement {
   #majVignettes() {
     const actif = this.#switcher.courant()?.id;
     for (const [id, b] of this.#vue?.vignettes ?? []) b.setAttribute('aria-pressed', String(id === actif));
+  }
+
+  // Une seule action principale (bouton blanc) : « Fixer au sol » (lien Quick Look ou pose RA), sinon « Photo ».
+  #majPrincipal() {
+    const vue = this.#vue;
+    if (!vue) return;
+    const lien = vue.lienRA.querySelector('a');
+    const quickLook = Boolean(this.#quicklook && lien && !lien.hidden);
+    lien?.classList.toggle('principal', quickLook);
+    vue.fixer.classList.toggle('principal', !vue.fixer.hidden);
+    vue.figer.classList.toggle('principal', !quickLook && vue.fixer.hidden);
   }
 
   #majCote() {
@@ -302,6 +314,7 @@ export class PiscineAr extends HTMLElement {
         avecVideo: mode === 'camera-gyro',
         surVignette: (m) => this.#choisirModele(m),
         surFiger: () => this.#figer(),
+        surFixer: () => this.#adaptateur?.fixerAuSol?.(),
         surRecentrer: () => this.#recentrer(),
         surEnregistrer: () => this.#enregistrer(),
         surReprendre: () => this.#reprendre(),
@@ -338,6 +351,7 @@ export class PiscineAr extends HTMLElement {
       if (mode === 'camera-gyro' && quickLookSupporte(document)) {
         this.#quicklook = createQuickLookAdaptateur({ calque: vue.lienRA, env: { document }, libelle: this.#textes.voirEnRA });
         if (modeleCourant) this.#quicklook.setModele(modeleCourant);
+        this.#majPrincipal();
       }
       this.#renderer.shadowMap.enabled = mode === 'webxr'; // seul le plan d'ombre de la RA reçoit des ombres
       adaptateur.onFrame(() => this.#rendre());
@@ -364,11 +378,14 @@ export class PiscineAr extends HTMLElement {
         setTimeout(resolve, IMAGE_DELAI_MS);
       });
       if (vie !== this.#vie || this.#adaptateur !== adaptateur) return;
-      // Capacités de l'adaptateur : pas de photo possible → « Figer » masqué ;
-      // en RA le calque porte déjà « Recentrer » → le « ↻ » de la barre est masqué.
+      // Capacités de l'adaptateur : pas de photo possible → « Photo » masqué ;
+      // en RA le calque porte déjà « Recentrer » → le « ↻ » de la barre est masqué,
+      // et « Fixer au sol » (pose au centre) devient l'action principale.
       const capacites = adaptateur.capacites ?? { echelle: true, photo: true };
       masquer(this.#vue.figer, !capacites.photo);
       masquer(this.#vue.recentrer, mode === 'webxr');
+      masquer(this.#vue.fixer, mode !== 'webxr');
+      this.#majPrincipal();
       this.#ecran?.remove();
       this.#ecran = null;
       this.#vue.racine.classList.remove('attente');

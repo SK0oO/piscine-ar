@@ -23,4 +23,15 @@ describe('npm run generate', () => {
       expect(readFileSync(glb).subarray(0, 4).toString('latin1')).toBe('glTF');
     }
   }, 120_000);
+
+  it('écrit aussi <id>-sol.usdz : 12 fichiers au total (3 glb, 3 usdz, 3 usdz sol, 3 png)', () => {
+    execSync('npm run generate', { cwd: ROOT, stdio: 'pipe' });
+    const sortie = readdirSync(resolve(ROOT, 'models/out'));
+    for (const id of ids) {
+      const p = resolve(ROOT, 'models/out', `${id}-sol.usdz`);
+      expect(existsSync(p), p).toBe(true);
+      expect(statSync(p).size, p).toBeGreaterThan(0);
+    }
+    expect(sortie.filter((f) => /\.(glb|usdz|png)$/.test(f))).toHaveLength(12);
+  }, 120_000);
 });

@@ -180,6 +180,22 @@ describe('createWebxrAdaptateur — place', () => {
     expect(apres.position.z).toBeCloseTo(-2, 5);
   });
 
+  it('fixerAuSol() pose la piscine au réticule (centre de l\'écran), même sans toucher', async () => {
+    const { adaptateur, image, hit } = await demarre();
+    image({ reticule: [hit(0.5, 0, -3)], tactile: [hit(2, 0, -5)] });
+    const p = adaptateur.fixerAuSol();
+    expect(p.position.x).toBeCloseTo(0.5, 5);
+    expect(p.position.z).toBeCloseTo(-3, 5);
+  });
+
+  it('fixerAuSol() sans sol trouvé renvoie null et ne bouge pas la pose', async () => {
+    const { adaptateur, pose, image } = await demarre();
+    image({ reticule: [] });
+    const avant = pose.get();
+    expect(adaptateur.fixerAuSol()).toBeNull();
+    expect(pose.get()).toEqual(avant);
+  });
+
   it('un second place() supprime l\'ancre précédente', async () => {
     const { adaptateur, ancres, image, hit } = await demarre();
     image({ reticule: [hit(0, 0, -3)] });

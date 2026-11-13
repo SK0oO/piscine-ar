@@ -38,7 +38,7 @@ export function vueExplication({ textes, config, erreur, reessayer, sansCamera, 
 }
 
 // Vue principale. Renvoie la racine et les éléments que le composant pilote.
-export function vuePiscine({ config, textes, canvas, avecVideo, surVignette, surFiger, surRecentrer, surEnregistrer, surReprendre }) {
+export function vuePiscine({ config, textes, canvas, avecVideo, surVignette, surFiger, surFixer, surRecentrer, surEnregistrer, surReprendre }) {
   let video = null;
   const racine = el('div', { classe: 'piscine attente' });
   if (avecVideo) {
@@ -68,10 +68,12 @@ export function vuePiscine({ config, textes, canvas, avecVideo, surVignette, sur
     vignettes.set(m.id, b);
     modeles.append(b);
   }
-  const figer = bouton(textes.figer, 'btn principal', surFiger);
+  const figer = bouton(textes.figer, 'btn principal', surFiger); // « Photo » ; le composant l'adoucit si une autre action est principale
+  const fixer = bouton(textes.fixerSol, 'btn', surFixer); // « Fixer au sol » (RA Android) : pose au centre
+  fixer.hidden = true;
   const recentrer = bouton('↻', 'btn rond', surRecentrer, { 'aria-label': textes.recentrer });
   const lienRA = el('div', { classe: 'lien-ra', role: 'lien-ra' });
-  const barre = protegerXr(el('div', { classe: 'bas' }, aide, modeles, el('div', { classe: 'boutons' }, recentrer, lienRA, figer)));
+  const barre = protegerXr(el('div', { classe: 'bas' }, aide, modeles, el('div', { classe: 'boutons' }, recentrer, lienRA, fixer, figer)));
 
   const photo = el('img', { role: 'photo', attrs: { alt: '' } });
   photo.hidden = true;
@@ -82,5 +84,5 @@ export function vuePiscine({ config, textes, canvas, avecVideo, surVignette, sur
   barrePhoto.hidden = true;
 
   racine.append(gestes, calque, haut, barre, photo, bandeau, barrePhoto);
-  return { racine, video, calque, lienRA, gestes, cote, aide, vignettes, barre, barrePhoto, photo, bandeau, figer, recentrer };
+  return { racine, video, calque, lienRA, gestes, cote, aide, vignettes, barre, barrePhoto, photo, bandeau, figer, fixer, recentrer };
 }

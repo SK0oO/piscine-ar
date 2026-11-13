@@ -31,6 +31,7 @@ button { font: inherit; font-size: 16px; color: #fff; cursor: pointer; }
 .btn.principal { background: #fff; color: #111; }
 .lien-ra { display: contents; }
 .lien-ra a { flex: 1; min-height: 56px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 0 12px; border-radius: 18px; background: rgba(255, 255, 255, .18); color: #fff; font-size: 16px; font-weight: 600; text-decoration: none; }
+.lien-ra a.principal { background: #fff; color: #111; }
 .lien-ra a img { height: 32px; width: 32px; object-fit: cover; border-radius: 8px; }
 .btn.rond { flex: 0 0 56px; padding: 0; }
 

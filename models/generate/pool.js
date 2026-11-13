@@ -2,6 +2,9 @@ import * as THREE from 'three';
 
 const SEG = 96; // points par contour : assez lisse, bien sous 20 000 triangles
 const NIVEAU_EAU = -0.15;
+// Dalle à ras du sol (Quick Look) : Apple pose le point le plus bas sur le sol détecté.
+const DALLE_EAU = -0.02;
+const DALLE_FOND = -0.05;
 
 // ---- contours (liste de points {x, z}, sens trigonométrique en vue de dessus) ----
 
@@ -173,7 +176,7 @@ function escalierGroupe(params, matMarche) {
 
 // ---- assemblage ----
 
-export function buildPool(params, { eau } = {}) {
+export function buildPool(params, { eau, dalle = false } = {}) {
   const couleurEau = params.eaux && params.eaux[eau];
   if (!couleurEau) throw new Error(`couleur d'eau inconnue : ${eau}`);
 
@@ -193,6 +196,22 @@ export function buildPool(params, { eau } = {}) {
 
   const groupe = new THREE.Group();
   groupe.name = params.id;
+
+  if (dalle) {
+    // Margelle (dessus à y = 0) + eau + fond sombre : pas de parois ni de fond profond, point le plus bas à -0,05.
+    const matFond = new THREE.MeshStandardMaterial({
+      name: 'fond', color: liner.clone().lerp(new THREE.Color('#000000'), 0.6), roughness: 0.9,
+    });
+    const margelleDalle = new THREE.Mesh(margelleGeo(interieur, exterieur, params.margelle.epaisseur), matMargelle);
+    margelleDalle.name = 'margelle';
+    const fond = new THREE.Mesh(planGeo(interieur, DALLE_FOND), matFond);
+    fond.name = 'fond';
+    const eauDalle = new THREE.Mesh(planGeo(interieur, DALLE_EAU), matEau);
+    eauDalle.name = 'eau';
+    groupe.add(margelleDalle, fond, eauDalle);
+    groupe.traverse((o) => { if (o.isMesh) { o.castShadow = o.name !== 'eau'; o.receiveShadow = true; } });
+    return groupe;
+  }
 
   const margelle = new THREE.Mesh(margelleGeo(interieur, exterieur, params.margelle.epaisseur), matMargelle);
   margelle.name = 'margelle';

@@ -5,8 +5,8 @@ test.beforeEach(async ({ page }) => {
   await demarrer(page);
 });
 
-test('« Figer » → blob image/png à la taille clientWidth × dpr, pixel de coin opaque', async ({ page }) => {
-  await bouton(page, 'Figer').click();
+test('« Photo » → blob image/png à la taille clientWidth × dpr, pixel de coin opaque', async ({ page }) => {
+  await bouton(page, 'Photo').click();
   await attendre(page, 'photo');
   const [ev] = await evenements(page, 'photo');
   expect(ev.blob.type).toBe('image/png');
@@ -30,21 +30,21 @@ test('« Figer » → blob image/png à la taille clientWidth × dpr, pixel de c
 });
 
 test('un second appui pendant le gel ne produit pas d\'autre événement', async ({ page }) => {
-  await bouton(page, 'Figer').evaluate((b) => { b.click(); b.click(); });
+  await bouton(page, 'Photo').evaluate((b) => { b.click(); b.click(); });
   await attendre(page, 'photo');
   await page.waitForTimeout(500);
   expect(await evenements(page, 'photo')).toHaveLength(1);
 });
 
 test('« Enregistrer » télécharge piscine.png', async ({ page }) => {
-  await bouton(page, 'Figer').click();
+  await bouton(page, 'Photo').click();
   await attendre(page, 'photo');
   const [dl] = await Promise.all([page.waitForEvent('download'), bouton(page, 'Enregistrer').click()]);
   expect(dl.suggestedFilename()).toBe('piscine.png');
 });
 
 test('« Reprendre » masque l\'image figée', async ({ page }) => {
-  await bouton(page, 'Figer').click();
+  await bouton(page, 'Photo').click();
   await attendre(page, 'photo');
   const image = hote(page).locator('img[data-role="photo"]');
   await expect(image).toBeVisible();

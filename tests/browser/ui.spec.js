@@ -55,3 +55,10 @@ test('retirer l\'élément termine les pistes caméra', async ({ page }) => {
   await page.evaluate(() => document.querySelector('piscine-ar').remove());
   await expect.poll(() => page.evaluate(() => window.__media.flux.flatMap((f) => f.getTracks()).every((t) => t.readyState === 'ended'))).toBe(true);
 });
+
+test('sans Quick Look, le bouton principal est « Photo »', async ({ page }) => {
+  await demarrer(page);
+  const principaux = hote(page).locator('.bas:not(.photo) .principal');
+  await expect(principaux).toHaveCount(1);
+  await expect(principaux).toHaveText('Photo');
+});

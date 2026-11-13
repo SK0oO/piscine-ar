@@ -1,4 +1,4 @@
-// Génère models/out/<id>.glb, <id>.usdz et <id>.png pour chaque JSON de models/params/.
+// Génère models/out/<id>.glb, <id>.usdz, <id>-sol.usdz (dalle à ras du sol, Quick Look) et <id>.png pour chaque JSON de models/params/.
 import { readdirSync, readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -40,7 +40,11 @@ for (const params of tous) {
   writeFileSync(resolve(SORTIE, `${params.id}.glb`), Buffer.from(glb));
   const usdz = await new USDZExporter().parseAsync(scene);
   writeFileSync(resolve(SORTIE, `${params.id}.usdz`), Buffer.from(usdz));
-  console.log(`${params.id} : glb + usdz`);
+  const sceneDalle = new Scene();
+  sceneDalle.add(buildPool(params, { eau: params.eauParDefaut, dalle: true }));
+  const usdzSol = await new USDZExporter().parseAsync(sceneDalle);
+  writeFileSync(resolve(SORTIE, `${params.id}-sol.usdz`), Buffer.from(usdzSol));
+  console.log(`${params.id} : glb + usdz + usdz sol`);
 }
 
 // Vignettes : la page de prévisualisation rendue par Chromium (WebGL logiciel).
@@ -51,7 +55,7 @@ await serveur.listen();
 const url = serveur.resolvedUrls.local[0].replace(/\/$/, '');
 const navigateur = await chromium.launch({ args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] });
 try {
-  const page = await navigateur.newPage({ viewport: { width: 512, height: 512 } });
+  const page = await navigateur.newPage({ viewport: { width: 512, height: 512 }, ignoreHTTPSErrors: true }) // serveur local, certificat local éventuel (.cert/);
   for (const params of tous) {
     await page.goto(`${url}/demo/preview.html?id=${params.id}&shot=1`);
     await page.waitForFunction(() => window.__pret === true, null, { timeout: 30000 });

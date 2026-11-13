@@ -13,7 +13,7 @@ test('session complète : uniquement des GET de même origine, aucun cookie pos�
   await pointeur(page, 'pointerup', 1, c.x + 30, c.y + 100);
   await vignette(page, IDS[1]).click();
   await attendre(page, 'model-changed');
-  await bouton(page, 'Figer').click();
+  await bouton(page, 'Photo').click();
   await attendre(page, 'photo');
 
   const reseau = requetes.filter((r) => /^https?:/.test(r.url));

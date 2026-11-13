@@ -79,6 +79,17 @@ describe('buildPool : les 3 formes', () => {
         expect(new Set(couleurs).size).toBe(3);
       });
 
+      it('mode dalle : maillages margelle, eau, fond ; ni bassin ni escalier ; Y max = 0 et Y min = -0,05 (1 cm près)', async () => {
+        const { buildPool } = await load();
+        const g = buildPool(params, { eau: params.eauParDefaut, dalle: true });
+        for (const nom of ['margelle', 'eau', 'fond']) expect(g.getObjectByName(nom), nom).toBeTruthy();
+        expect(g.getObjectByName('bassin')).toBeFalsy();
+        expect(g.getObjectByName('escalier')).toBeFalsy();
+        const b = box(g);
+        expect(Math.abs(b.max.y)).toBeLessThanOrEqual(0.01);
+        expect(Math.abs(b.min.y + 0.05)).toBeLessThanOrEqual(0.01);
+      });
+
       it('un nom d\'eau inconnu lève une erreur', async () => {
         const { buildPool } = await load();
         expect(() => buildPool(params, { eau: 'rose-bonbon' })).toThrow();

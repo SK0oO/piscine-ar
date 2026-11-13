@@ -7,21 +7,21 @@
       "id": "rectangulaire-8x4",
       "nom": "Rectangulaire 8 × 4",
       "glb": "/models/out/rectangulaire-8x4.glb",
-      "usdz": "/models/out/rectangulaire-8x4.usdz",
+      "usdz": "/models/out/rectangulaire-8x4-sol.usdz",
       "vignette": "/models/out/rectangulaire-8x4.png"
     },
     {
       "id": "haricot-7x3-5",
       "nom": "Forme libre 7 × 3,5",
       "glb": "/models/out/haricot-7x3-5.glb",
-      "usdz": "/models/out/haricot-7x3-5.usdz",
+      "usdz": "/models/out/haricot-7x3-5-sol.usdz",
       "vignette": "/models/out/haricot-7x3-5.png"
     },
     {
       "id": "ovale-5x3",
       "nom": "Ovale 5 × 3",
       "glb": "/models/out/ovale-5x3.glb",
-      "usdz": "/models/out/ovale-5x3.usdz",
+      "usdz": "/models/out/ovale-5x3-sol.usdz",
       "vignette": "/models/out/ovale-5x3.png"
     }
   ],

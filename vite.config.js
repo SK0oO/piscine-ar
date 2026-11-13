@@ -4,7 +4,8 @@ import { defineConfig } from 'vite';
 import { existsSync, readFileSync } from 'node:fs';
 
 // Certificat local (dossier .cert/, hors git) pour tester la caméra sur un téléphone du même Wi-Fi.
-const https = existsSync('.cert/cert.pem')
+// Activer avec PISCINE_HTTPS=1 (ex. `PISCINE_HTTPS=1 npx vite preview`) ; par défaut http, pour les tests.
+const https = process.env.PISCINE_HTTPS && existsSync('.cert/cert.pem')
   ? { key: readFileSync('.cert/key.pem'), cert: readFileSync('.cert/cert.pem') }
   : undefined;
 import { cpSync, writeFileSync, mkdirSync } from 'node:fs';

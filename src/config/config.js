@@ -3,7 +3,7 @@ import { PiscineArError } from '../core/erreurs.js';
 // Clés de texte connues (les autres sont ignorées).
 export const CLES_TEXTES = Object.freeze([
   'titre', 'explication', 'autoriser', 'reessayer', 'voirSansCamera', 'lancerCamera',
-  'figer', 'enregistrer', 'reprendre', 'recentrer', 'balayerSol', 'viserContraste', 'voirEnRA',
+  'figer', 'enregistrer', 'reprendre', 'recentrer', 'balayerSol', 'viserContraste', 'voirEnRA', 'fixerSol',
 ]);
 
 const ID = /^[a-z0-9-]+$/;

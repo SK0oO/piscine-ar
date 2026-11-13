@@ -43,7 +43,7 @@ Si, exceptionnellement, le script doit rester hébergé ailleurs : utiliser un c
       "id": "rectangulaire-8x4",
       "nom": "Rectangulaire 8 × 4",
       "glb": "/piscine-ar/models/out/rectangulaire-8x4.glb",
-      "usdz": "/piscine-ar/models/out/rectangulaire-8x4.usdz",
+      "usdz": "/piscine-ar/models/out/rectangulaire-8x4-sol.usdz",
       "vignette": "/piscine-ar/models/out/rectangulaire-8x4.png"
     }
   ],
@@ -58,14 +58,16 @@ Si, exceptionnellement, le script doit rester hébergé ailleurs : utiliser un c
 | `pisciniste.logo` | Adresse d'une image, ou `null`. |
 | `couleurs.accent` | Facultatif. Couleur `#rrggbb`. |
 | `textes` | Facultatif. Remplace des textes par défaut ; les clés inconnues sont ignorées. |
-| `modeles` | Au moins un. `id` : minuscules, chiffres et tirets, unique. `nom`, `glb` et `vignette` obligatoires. `usdz` facultatif (sans lui, pas de bouton « Échelle réelle » sur iPhone). |
+| `modeles` | Au moins un. `id` : minuscules, chiffres et tirets, unique. `nom`, `glb` et `vignette` obligatoires. `usdz` facultatif (sans lui, pas de bouton « Fixer au sol » sur iPhone). Le `usdz` est la « dalle à ras du sol » `<id>-sol.usdz` produite par `npm run generate` : margelle, eau et fond sombre sans parois, point le plus bas à −0,05 m, car Apple pose le point le plus bas de l'objet sur le sol détecté. Le `glb` garde le bassin complet. |
 | `modeleParDefaut` | Facultatif : un `id` de la liste, sinon le premier. |
 
 Les adresses (`glb`, `usdz`, `vignette`, `logo`) sont relatives au fichier JSON. Leur origine doit être celle de la page ou celle du script, sinon le composant refuse la config (erreur `config-invalide`). Exemple de la démo : `demo/config/pisciniste-demo.json`.
 
+« Fixer au sol » est le bouton principal. Sur iPhone, il ouvre la visionneuse Apple (Quick Look) avec la dalle à ras du sol ; sur Android, il pose la piscine au centre de l'écran, dans la page. « Photo » reste le bouton secondaire.
+
 ## L'événement `piscine-ar:photo` et le bouton devis
 
-Quand le visiteur touche « Figer », le composant émet `piscine-ar:photo` (une seule fois). `event.detail` contient `blob` (image PNG), `largeur`, `hauteur` et `modele`. La photo ne quitte pas le téléphone : c'est au site de décider quoi en faire.
+Quand le visiteur touche « Photo », le composant émet `piscine-ar:photo` (une seule fois). `event.detail` contient `blob` (image PNG), `largeur`, `hauteur` et `modele`. La photo ne quitte pas le téléphone : c'est au site de décider quoi en faire.
 
 ```html
 <img id="photo" alt="" hidden>
