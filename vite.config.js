@@ -30,11 +30,25 @@ function sitePages() {
   };
 }
 
+
+// Quick Look (iPhone) exige que les .usdz soient servis en model/vnd.usdz+zip.
+const usdzMime = () => {
+  const middleware = (req, res, next) => {
+    if ((req.url || '').split('?')[0].endsWith('.usdz')) res.setHeader('Content-Type', 'model/vnd.usdz+zip');
+    next();
+  };
+  return {
+    name: 'usdz-mime',
+    configureServer(s) { s.middlewares.use(middleware); },
+    configurePreviewServer(s) { s.middlewares.use(middleware); },
+  };
+};
+
 export default defineConfig({
   root: '.',
   base: './',
   publicDir: false,
-  plugins: [sitePages()],
+  plugins: [usdzMime(), sitePages()],
   build: {
     outDir: 'dist',
     emptyOutDir: false, // dist/piscine-ar.js vient de la première construction
