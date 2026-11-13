@@ -1,6 +1,12 @@
 // Construction 2/2 (et serveur de dev/tests) : le site de démo, à côté de dist/piscine-ar.js.
 // dist/ reprend l'arborescence du dépôt : demo/, models/out/ et models/params/ côte à côte.
 import { defineConfig } from 'vite';
+import { existsSync, readFileSync } from 'node:fs';
+
+// Certificat local (dossier .cert/, hors git) pour tester la caméra sur un téléphone du même Wi-Fi.
+const https = existsSync('.cert/cert.pem')
+  ? { key: readFileSync('.cert/key.pem'), cert: readFileSync('.cert/cert.pem') }
+  : undefined;
 import { cpSync, writeFileSync, mkdirSync } from 'node:fs';
 
 // Fichiers copiés tels quels, plus .nojekyll (GitHub Pages) et une racine qui renvoie vers demo/.
@@ -34,6 +40,7 @@ export default defineConfig({
     emptyOutDir: false, // dist/piscine-ar.js vient de la première construction
     rollupOptions: { input: { demo: 'demo/index.html', preview: 'demo/preview.html' } },
   },
-  server: { host: true },
+  server: { host: true, https },
+  preview: { host: true, https, port: 4443 },
   test: { include: ['tests/unit/**/*.test.js'], environment: 'node' },
 });
