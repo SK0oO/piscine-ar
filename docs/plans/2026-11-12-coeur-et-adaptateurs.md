@@ -325,3 +325,9 @@ PLAN PRÊT
 - `mode = 'quicklook'`, `capacites = { echelle: false, photo: false }`, `place` → null, `capturer` rejette `photo-indisponible`.
 - Dans l'interface, le lien visible porte le texte « Échelle réelle » et reste visible en mode `camera-gyro` quand `supporte(document)` est vrai ; jamais en `webxr`.
 - Tests navigateur : `workers: 1` (fausse caméra partagée).
+
+
+## 10. Mise à jour du 13/11/2026 (retours V3 d'Alex, brief docs/briefs/V3-retours-alex.md)
+
+- Le bouton photo s'appelle « Photo » (ex-« Figer »). L'action principale est « Fixer au sol » : sur iPhone, c'est le lien Quick Look (ex-« Échelle réelle ») vers `<id>-sol.usdz`, une dalle à ras du sol (margelle + eau à −0,02 + fond à −0,05) ; sur Android, un bouton qui appelle `fixerAuSol()` (pose au réticule du centre). Un seul bouton principal à la fois (`#majPrincipal`).
+- Les mentions « Figer » et « Échelle réelle » des §7 et §9 sont remplacées par ces noms.

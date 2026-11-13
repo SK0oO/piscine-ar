@@ -55,7 +55,7 @@ await serveur.listen();
 const url = serveur.resolvedUrls.local[0].replace(/\/$/, '');
 const navigateur = await chromium.launch({ args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] });
 try {
-  const page = await navigateur.newPage({ viewport: { width: 512, height: 512 }, ignoreHTTPSErrors: true }) // serveur local, certificat local éventuel (.cert/);
+  const page = await navigateur.newPage({ viewport: { width: 512, height: 512 }, ignoreHTTPSErrors: true }); // serveur local, certificat local éventuel (.cert/)
   for (const params of tous) {
     await page.goto(`${url}/demo/preview.html?id=${params.id}&shot=1`);
     await page.waitForFunction(() => window.__pret === true, null, { timeout: 30000 });
