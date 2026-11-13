@@ -9,7 +9,7 @@ import { creerDocumentFactice, trouver } from './fakes/document.js';
 //  - setModele(modele, racine) lit modele.usdz, modele.nom (titre de la bannière) et modele.vignette (src de l'<img>) ;
 //  - lien = élément <a> créé par env.document.createElement('a'), ajouté à `calque`, avec rel="ar" (attribut),
 //    propriété `href` mise à jour, propriété `hidden` à true quand le modèle n'a pas d'usdz.
-const FRAGMENT = '#allowsContentScaling=0&callToAction=Revenir%20au%20site&checkoutTitle=';
+const FRAGMENT = '#callToAction=Revenir%20au%20site&checkoutTitle=';
 const A = { id: 'rect', nom: 'Rectangulaire 8 × 4', usdz: 'https://exemple.invalid/rect.usdz', vignette: 'https://exemple.invalid/rect.png' };
 const B = { id: 'ovale', nom: 'Ovale 5 & 3', usdz: 'https://exemple.invalid/ovale.usdz', vignette: 'https://exemple.invalid/ovale.png' };
 const SANS_USDZ = { id: 'sans', nom: 'Sans usdz', vignette: 'https://exemple.invalid/sans.png' };
@@ -30,7 +30,7 @@ const lien = (calque) => trouver(calque, 'a')[0];
 describe('urlQuickLook : action personnalisée', () => {
   it("encode l'action d'appel (accueil iPhone : « Changer de modèle »)", () => {
     expect(urlQuickLook(A.usdz, { titre: 'T', action: 'Changer de modèle' }))
-      .toBe(`${A.usdz}#allowsContentScaling=0&callToAction=Changer%20de%20mod%C3%A8le&checkoutTitle=T`);
+      .toBe(`${A.usdz}#callToAction=Changer%20de%20mod%C3%A8le&checkoutTitle=T`);
   });
   it("l'adaptateur applique l'action donnée au href", () => {
     const document = creerDocumentFactice();
@@ -45,7 +45,7 @@ describe('urlQuickLook', () => {
   it('retire un fragment déjà présent dans l\'URL du usdz', () => {
     const u = urlQuickLook('https://site.fr/p.usdz#x=1', { titre: 'T' });
     expect(u.split('#').length).toBe(2);
-    expect(u.startsWith('https://site.fr/p.usdz#allowsContentScaling=0')).toBe(true);
+    expect(u.startsWith('https://site.fr/p.usdz#callToAction=')).toBe(true);
   });
 
   it('ajoute le fragment exact et encode le titre', () => {

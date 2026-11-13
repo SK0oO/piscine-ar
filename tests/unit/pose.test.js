@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { createPoseStore, ECHELLE_MIN, ECHELLE_MAX, POSE_DEPART } from '../../src/core/pose.js';
+import { createPoseStore, decalerSelonDirection, ECHELLE_MIN, ECHELLE_MAX, POSE_DEPART } from '../../src/core/pose.js';
 
 describe('constantes de pose', () => {
   it('bornes et pose de départ conformes au contrat', () => {
@@ -81,5 +81,31 @@ describe('createPoseStore', () => {
   it('prend la pose initiale fournie', () => {
     const s = createPoseStore({ echelleLibre: true, initiale: { position: { x: 2, y: 0, z: -1 }, rotationY: 0.5, scale: 1.2 } });
     expect(s.get()).toEqual({ position: { x: 2, y: 0, z: -1 }, rotationY: 0.5, scale: 1.2 });
+  });
+});
+
+describe('decalerSelonDirection', () => {
+  const proche = (d, x, z) => {
+    expect(d.x).toBeCloseTo(x, 6);
+    expect(d.z).toBeCloseTo(z, 6);
+  };
+
+  it('regard vers -Z : avant = -Z, latéral positif = +X (droite de l\'écran)', () => {
+    proche(decalerSelonDirection({ x: 0, z: -1 }, { avant: 0.25 }), 0, -0.25);
+    proche(decalerSelonDirection({ x: 0, z: -1 }, { lateral: 0.25 }), 0.25, 0);
+  });
+
+  it('regard vers +X : avant = +X, droite de l\'écran = +Z', () => {
+    proche(decalerSelonDirection({ x: 1, z: 0 }, { avant: 0.25 }), 0.25, 0);
+    proche(decalerSelonDirection({ x: 1, z: 0 }, { lateral: 0.25 }), 0, 0.25);
+  });
+
+  it('normalise la direction (inclinaison du regard) : la distance reste 0,25 m', () => {
+    const d = decalerSelonDirection({ x: 0.3, z: -0.4 }, { avant: 0.25 });
+    expect(Math.hypot(d.x, d.z)).toBeCloseTo(0.25, 6);
+  });
+
+  it('regard à la verticale (direction nulle) : retombe sur -Z sans NaN', () => {
+    proche(decalerSelonDirection({ x: 0, z: 0 }, { avant: 0.25 }), 0, -0.25);
   });
 });

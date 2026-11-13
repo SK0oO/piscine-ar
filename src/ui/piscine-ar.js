@@ -5,7 +5,7 @@ import { createWebxrAdaptateur } from '../adapters/webxr.js';
 import { supporte as quickLookSupporte, createQuickLookAdaptateur } from '../adapters/quicklook.js';
 import { PiscineArError } from '../core/erreurs.js';
 import { createStage } from '../core/stage.js';
-import { createPoseStore, POSE_DEPART } from '../core/pose.js';
+import { createPoseStore, decalerSelonDirection, POSE_DEPART } from '../core/pose.js';
 import { createGestureTracker } from '../core/gestures.js';
 import { createModelSwitcher } from '../core/models.js';
 import { chargerGlb } from '../core/loader.js';
@@ -19,6 +19,10 @@ const CONFIG_TAILLE_MAX = 1024 * 1024; // 1 Mo
 const CONFIG_DELAI_MS = 10_000;
 const CHOIX_DELAI_MS = 2_000;
 const IMAGE_DELAI_MS = 1_500;
+const PAS_DEPLACEMENT_M = 0.25;
+const PAS_ROTATION_RAD = (15 * Math.PI) / 180;
+const PAS_ECHELLE = 1.1;
+const REPETITION_MS = 120;
 
 // GET de la config, sans cookie, avec délai et plafond de taille avant JSON.parse.
 async function lireConfig(url) {
@@ -77,6 +81,7 @@ export class PiscineAr extends HTMLElement {
   #occupe = false;
   #gele = false;
   #urlPhoto = null;
+  #repetition = null; // minuteur d'appui long de la télécommande
 
   constructor() {
     super();
@@ -86,6 +91,10 @@ export class PiscineAr extends HTMLElement {
     this.#racine = document.createElement('div');
     this.#racine.className = 'racine';
     ombre.append(style, this.#racine);
+    // Plein écran : Safari ne doit ni défiler ni zoomer sous le doigt (écouteur non passif, sinon preventDefault est ignoré).
+    this.#racine.addEventListener('touchmove', (e) => {
+      if (this.classList.contains('plein-ecran')) e.preventDefault();
+    }, { passive: false });
     this.#initialiser();
   }
 
@@ -130,6 +139,8 @@ export class PiscineAr extends HTMLElement {
 
   #liberer() {
     this.#vie++;
+    this.#arreterRepetition();
+    this.classList.remove('plein-ecran');
     this.#adaptateur?.stop();
     if (this.#urlPhoto) URL.revokeObjectURL(this.#urlPhoto);
     this.#urlPhoto = null;
@@ -239,6 +250,8 @@ export class PiscineAr extends HTMLElement {
   }
 
   #retirerVue() {
+    this.#arreterRepetition();
+    this.classList.remove('plein-ecran');
     if (this.#urlPhoto) URL.revokeObjectURL(this.#urlPhoto);
     this.#urlPhoto = null;
     this.#adaptateur?.stop();
@@ -353,8 +366,11 @@ export class PiscineAr extends HTMLElement {
         surRecentrer: () => this.#recentrer(),
         surEnregistrer: () => this.#enregistrer(),
         surReprendre: () => this.#reprendre(),
+        surFermer: () => this.#retourAccueil(),
+        surTelecommande: (action, actif, unPas) => this.#telecommande(action, actif, unPas),
       });
       this.#vue = vue;
+      this.classList.add('plein-ecran');
       this.#racine.append(vue.racine);
       this.#brancherGestes(vue);
       this.#majCote();
@@ -418,6 +434,8 @@ export class PiscineAr extends HTMLElement {
       // et « Fixer au sol » (pose au centre) devient l'action principale.
       const capacites = adaptateur.capacites ?? { echelle: true, photo: true };
       masquer(this.#vue.figer, !capacites.photo);
+      masquer(this.#vue.plus, !capacites.echelle);
+      masquer(this.#vue.moins, !capacites.echelle);
       masquer(this.#vue.recentrer, mode === 'webxr');
       masquer(this.#vue.fixer, mode !== 'webxr');
       this.#majPrincipal();
@@ -476,6 +494,60 @@ export class PiscineAr extends HTMLElement {
     ecouter('pointermove', 'move');
     ecouter('pointerup', 'up');
     ecouter('pointercancel', 'cancel');
+  }
+
+  // --- télécommande -------------------------------------------------------
+
+  // Direction horizontale du regard de la caméra (le « avant » de la télécommande).
+  #directionCamera() {
+    const camera = this.#stage.camera;
+    camera.updateMatrixWorld(true);
+    const m = camera.matrixWorld.elements;
+    return { x: -m[8], z: -m[10] };
+  }
+
+  // Déplacement au sol. En RA, l'adaptateur garde le décalage relatif à l'ancre (sinon l'ancre ramènerait la piscine) ;
+  // sinon on modifie directement la pose libre.
+  #deplacer(avant, lateral) {
+    const d = decalerSelonDirection(this.#directionCamera(), { avant, lateral });
+    if (typeof this.#adaptateur?.deplacer === 'function') {
+      this.#adaptateur.deplacer(d.x, d.z);
+      return;
+    }
+    const p = this.#pose.get().position;
+    this.#pose.setPosition({ x: p.x + d.x, y: p.y, z: p.z + d.z });
+  }
+
+  #pasTelecommande(action) {
+    switch (action) {
+      case 'gauche': this.#deplacer(0, -PAS_DEPLACEMENT_M); break;
+      case 'droite': this.#deplacer(0, PAS_DEPLACEMENT_M); break;
+      case 'avant': this.#deplacer(PAS_DEPLACEMENT_M, 0); break;
+      case 'arriere': this.#deplacer(-PAS_DEPLACEMENT_M, 0); break;
+      case 'tournerG': this.#pose.rotateBy(PAS_ROTATION_RAD); break; // sens antihoraire à l'écran : rotationY augmente
+      case 'tournerD': this.#pose.rotateBy(-PAS_ROTATION_RAD); break;
+      case 'plus': this.#pose.scaleBy(PAS_ECHELLE); break;
+      case 'moins': this.#pose.scaleBy(1 / PAS_ECHELLE); break;
+      default: return;
+    }
+    if (this.#vue) this.#vue.aide.hidden = true;
+    this.#majCote();
+  }
+
+  #arreterRepetition() {
+    clearInterval(this.#repetition);
+    this.#repetition = null;
+  }
+
+  // Appui : un pas tout de suite, puis un pas toutes les 120 ms tant que le doigt reste. `unPas` : clavier, sans répétition.
+  #telecommande(action, actif, unPas) {
+    if (!actif) {
+      this.#arreterRepetition();
+      return;
+    }
+    this.#arreterRepetition();
+    this.#pasTelecommande(action);
+    if (!unPas) this.#repetition = setInterval(() => this.#pasTelecommande(action), REPETITION_MS);
   }
 
   #recentrer() {

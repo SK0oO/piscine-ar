@@ -4,6 +4,8 @@ export const STYLES = `
   font: 16px/1.4 -apple-system, "Segoe UI", system-ui, sans-serif; -webkit-tap-highlight-color: transparent;
   --accent: #1f6f9f; --fond: rgba(15, 20, 25, .72); }
 * { box-sizing: border-box; }
+/* Modes caméra : l'hôte couvre tout l'écran ; !important pour résister aux styles de la page hôte. */
+:host(.plein-ecran) { position: fixed !important; inset: 0 !important; width: 100% !important; height: 100% !important; max-width: none !important; max-height: none !important; margin: 0 !important; z-index: 2147483000 !important; overscroll-behavior: none; touch-action: none; }
 [hidden] { display: none !important; }
 .racine { position: absolute; inset: 0; }
 button { font: inherit; font-size: 16px; color: #fff; cursor: pointer; }
@@ -17,10 +19,14 @@ button { font: inherit; font-size: 16px; color: #fff; cursor: pointer; }
 .calque > * { pointer-events: auto; }
 .haut { position: absolute; z-index: 4; top: calc(16px + env(safe-area-inset-top)); left: 16px; right: 16px; display: flex; flex-direction: column; align-items: center; gap: 10px; pointer-events: none; }
 .pastille { display: inline-flex; align-items: center; gap: 8px; background: var(--fond); color: #fff; font-size: 16px; padding: 10px 14px; border-radius: 14px; }
+.fermer { position: absolute; z-index: 6; top: calc(16px + env(safe-area-inset-top)); right: 16px; width: 44px; height: 44px; padding: 0; border: 0; border-radius: 50%; background: var(--fond); color: #fff; font-size: 26px; line-height: 1; }
 .pastille img { display: block; height: 24px; width: auto; }
 
 .bas { position: absolute; z-index: 5; left: 0; right: 0; bottom: 0; padding: 14px 16px calc(20px + env(safe-area-inset-bottom)); background: linear-gradient(180deg, transparent, rgba(15, 20, 25, .85) 40%); }
 .aide { margin: 0 auto 12px; width: fit-content; max-width: 100%; text-align: center; background: var(--fond); color: #fff; font-size: 16px; padding: 10px 16px; border-radius: 14px; pointer-events: none; }
+.telecommande { display: grid; grid-template-columns: repeat(3, 48px); gap: 6px; margin: 0 0 12px auto; width: fit-content; padding: 6px; border-radius: 16px; background: var(--fond); }
+.touche { min-width: 44px; min-height: 44px; padding: 0; border: 0; border-radius: 12px; background: rgba(255, 255, 255, .18); color: #fff; font-size: 22px; line-height: 1; touch-action: manipulation; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
+.touche:active { background: rgba(255, 255, 255, .4); }
 .modeles { display: flex; gap: 12px; margin-bottom: 14px; }
 .modele { flex: 1; min-width: 0; background: rgba(255, 255, 255, .12); border: 2px solid transparent; border-radius: 16px; padding: 8px; text-align: center; }
 .modele img { display: block; width: 100%; height: 64px; object-fit: cover; border-radius: 10px; margin-bottom: 6px; }

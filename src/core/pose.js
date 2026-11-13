@@ -29,3 +29,12 @@ export function createPoseStore({ echelleLibre, initiale = POSE_DEPART } = {}) {
     },
   };
 }
+
+// Déplacement au sol selon la direction de la caméra (x, z : composantes horizontales du regard, pas besoin d'être normalisées).
+// `avant` > 0 éloigne la piscine de la caméra ; `lateral` > 0 la pousse vers la droite de l'écran. Renvoie { x, z } en mètres.
+export function decalerSelonDirection(direction, { avant = 0, lateral = 0 }) {
+  const n = Math.hypot(direction?.x ?? 0, direction?.z ?? 0);
+  const fx = n > 1e-6 ? direction.x / n : 0;
+  const fz = n > 1e-6 ? direction.z / n : -1; // regard à la verticale : on retombe sur -Z
+  return { x: avant * fx + lateral * -fz, z: avant * fz + lateral * fx };
+}

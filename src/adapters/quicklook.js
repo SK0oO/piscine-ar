@@ -1,6 +1,7 @@
 import { PiscineArError } from '../core/erreurs.js';
 
-const FRAGMENT = (action) => `#allowsContentScaling=0&callToAction=${encodeURIComponent(action)}&checkoutTitle=`;
+// Pas de allowsContentScaling : l'échelle reste libre (100 % au départ, on pince pour réduire en intérieur).
+const FRAGMENT = (action) => `#callToAction=${encodeURIComponent(action)}&checkoutTitle=`;
 const ACTION_DEFAUT = 'Revenir au site';
 
 export function urlQuickLook(usdz, { titre, action = ACTION_DEFAUT }) {

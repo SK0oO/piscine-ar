@@ -196,6 +196,32 @@ describe('createWebxrAdaptateur — place', () => {
     expect(pose.get()).toEqual(avant);
   });
 
+  it('deplacer() décale la pose, et le décalage survit au suivi de l\'ancre', async () => {
+    const { adaptateur, ancres, image, hit } = await demarre();
+    image({ reticule: [hit(0.5, 0, -3)] });
+    adaptateur.place(100, 200);
+    await flush();
+    adaptateur.deplacer(0.25, -0.5);
+    expect(adaptateur.getPose().position.x).toBeCloseTo(0.75, 5);
+    expect(adaptateur.getPose().position.z).toBeCloseTo(-3.5, 5);
+    ancres[0].deplacer(1, 0.1, -2);
+    image({ reticule: [] });
+    const apres = adaptateur.getPose().position;
+    expect(apres.x).toBeCloseTo(1.25, 5);
+    expect(apres.y).toBeCloseTo(0.1, 5);
+    expect(apres.z).toBeCloseTo(-2.5, 5);
+  });
+
+  it('deplacer() sans ancre modifie la pose libre ; un nouveau place() remet le décalage à zéro', async () => {
+    const { adaptateur, image, hit } = await demarre();
+    adaptateur.deplacer(1, 1);
+    expect(adaptateur.getPose().position.x).toBeCloseTo(1, 5);
+    image({ reticule: [hit(2, 0, -4)] });
+    const p = adaptateur.place(10, 10);
+    expect(p.position.x).toBeCloseTo(2, 5);
+    expect(p.position.z).toBeCloseTo(-4, 5);
+  });
+
   it('un second place() supprime l\'ancre précédente', async () => {
     const { adaptateur, ancres, image, hit } = await demarre();
     image({ reticule: [hit(0, 0, -3)] });

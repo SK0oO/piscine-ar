@@ -4,7 +4,7 @@ import { ouvrir, bouton, hote, vignette, attendre, evenements, IDS } from './hel
 // Quick Look (lot C). Sous Chromium, relList.supports('ar') est faux : on le force à vrai AVANT le chargement.
 // (relList est un accesseur de HTMLAnchorElement.prototype ; `supports` vit sur DOMTokenList.prototype, c'est lui qu'on remplace.)
 // Noms fixés : lien = a[rel~="ar"] dans le Shadow DOM, texte visible « Fixer au sol », une seule <img> dedans.
-const FRAGMENT = '#allowsContentScaling=0&callToAction=Revenir%20au%20site&checkoutTitle=';
+const FRAGMENT = '#callToAction=Revenir%20au%20site&checkoutTitle=';
 const lien = (page) => hote(page).locator('a[rel~="ar"]');
 
 // Avec Quick Look supporté, l'accueil est l'écran Quick Look ; l'aperçu caméra se lance par le lien secondaire.
@@ -32,10 +32,11 @@ test('le lien « Fixer au sol » est visible en camera-gyro', async ({ page }) =
   await expect(lien(page).locator('img')).toHaveCount(1);
 });
 
-test('le href se termine par #allowsContentScaling=0… et le titre du modèle encodé', async ({ page }) => {
+test('le href se termine par #callToAction=… et le titre du modèle encodé, sans allowsContentScaling (échelle libre)', async ({ page }) => {
   await demarrer(page);
   const href = await lien(page).getAttribute('href');
   expect(href).toContain('/models/out/rectangulaire-8x4-sol.usdz');
+  expect(href).not.toContain('allowsContentScaling');
   expect(href.endsWith(`${FRAGMENT}${encodeURIComponent('Rectangulaire 8 × 4')}`)).toBe(true);
 });
 
@@ -97,7 +98,7 @@ test('accueil Quick Look : le href suit la vignette et model-changed part avec l
   await expect.poll(() => principalAccueil(page).getAttribute('href')).not.toBe(avant);
   const apres = await principalAccueil(page).getAttribute('href');
   expect(apres).toContain('/models/out/haricot-7x3-5-sol.usdz');
-  expect(apres.endsWith(`#allowsContentScaling=0&callToAction=Changer%20de%20mod%C3%A8le&checkoutTitle=${encodeURIComponent('Forme libre 7 × 3,5')}`)).toBe(true);
+  expect(apres.endsWith(`#callToAction=Changer%20de%20mod%C3%A8le&checkoutTitle=${encodeURIComponent('Forme libre 7 × 3,5')}`)).toBe(true);
   const [changement] = await evenements(page, 'model-changed');
   expect(changement.modele).toBe(IDS[1]);
   expect(changement.pose.position).toEqual({ x: 0, y: 0, z: -6 });

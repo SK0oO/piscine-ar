@@ -64,8 +64,41 @@ export function vueQuickLook({ textes, config, surVignette, surCamera }) {
   return { ecran, vignettes, lienRA };
 }
 
+// Télécommande : pavé 3 × 3 (⟲ ↑ ⟳ / ← · → / − ↓ +). Appui long = répétition, gérée par `surTelecommande(action, actif)`.
+const TOUCHES = [
+  ['tournerG', '⟲', 'teleTournerGauche'], ['avant', '↑', 'teleAvant'], ['tournerD', '⟳', 'teleTournerDroite'],
+  ['gauche', '←', 'teleGauche'], null, ['droite', '→', 'teleDroite'],
+  ['moins', '−', 'teleReduire'], ['arriere', '↓', 'teleArriere'], ['plus', '+', 'teleAgrandir'],
+];
+
+function vueTelecommande(textes, surTelecommande) {
+  const pave = el('div', { classe: 'telecommande', role: 'telecommande' });
+  const boutons = {};
+  for (const touche of TOUCHES) {
+    if (!touche) {
+      pave.append(el('span'));
+      continue;
+    }
+    const [action, symbole, cle] = touche;
+    const b = el('button', { classe: 'touche', texte: symbole, role: `tele-${action}`, attrs: { type: 'button', 'aria-label': textes[cle] } });
+    const arreter = () => surTelecommande(action, false);
+    b.addEventListener('pointerdown', (e) => {
+      e.preventDefault();
+      surTelecommande(action, true);
+    });
+    for (const nom of ['pointerup', 'pointercancel', 'pointerleave', 'lostpointercapture']) b.addEventListener(nom, arreter);
+    b.addEventListener('click', (e) => {
+      if (e.detail === 0) surTelecommande(action, true, true); // clavier : un seul pas
+    });
+    b.addEventListener('contextmenu', (e) => e.preventDefault());
+    boutons[action] = b;
+    pave.append(b);
+  }
+  return { pave, plus: boutons.plus, moins: boutons.moins };
+}
+
 // Vue principale. Renvoie la racine et les éléments que le composant pilote.
-export function vuePiscine({ config, textes, canvas, avecVideo, surVignette, surFiger, surFixer, surRecentrer, surEnregistrer, surReprendre }) {
+export function vuePiscine({ config, textes, canvas, avecVideo, surVignette, surFiger, surFixer, surRecentrer, surEnregistrer, surReprendre, surTelecommande, surFermer }) {
   let video = null;
   const racine = el('div', { classe: 'piscine attente' });
   if (avecVideo) {
@@ -76,7 +109,7 @@ export function vuePiscine({ config, textes, canvas, avecVideo, surVignette, sur
   }
   racine.append(canvas);
 
-  const gestes = el('div', { role: 'gestes' });
+  const gestes = el('div', { classe: 'gestes', role: 'gestes' });
   const calque = el('div', { classe: 'calque', role: 'calque' });
   const cote = el('div', { classe: 'pastille', role: 'cote' });
 
@@ -87,12 +120,13 @@ export function vuePiscine({ config, textes, canvas, avecVideo, surVignette, sur
 
   const aide = el('p', { classe: 'aide', texte: textes.aide });
   const { modeles, vignettes } = vignettesModeles(config, surVignette);
+  const telecommande = vueTelecommande(textes, surTelecommande);
   const figer = bouton(textes.figer, 'btn principal', surFiger); // « Photo » ; le composant l'adoucit si une autre action est principale
   const fixer = bouton(textes.fixerSol, 'btn', surFixer); // « Fixer au sol » (RA Android) : pose au centre
   fixer.hidden = true;
   const recentrer = bouton('↻', 'btn rond', surRecentrer, { 'aria-label': textes.recentrer });
   const lienRA = el('div', { classe: 'lien-ra', role: 'lien-ra' });
-  const barre = protegerXr(el('div', { classe: 'bas' }, aide, modeles, el('div', { classe: 'boutons' }, recentrer, lienRA, fixer, figer)));
+  const barre = protegerXr(el('div', { classe: 'bas' }, aide, telecommande.pave, modeles, el('div', { classe: 'boutons' }, recentrer, lienRA, fixer, figer)));
 
   const photo = el('img', { role: 'photo', attrs: { alt: '' } });
   photo.hidden = true;
@@ -102,6 +136,7 @@ export function vuePiscine({ config, textes, canvas, avecVideo, surVignette, sur
     el('div', { classe: 'boutons' }, bouton(textes.reprendre, 'btn', surReprendre), bouton(textes.enregistrer, 'btn principal', surEnregistrer))));
   barrePhoto.hidden = true;
 
-  racine.append(gestes, calque, haut, barre, photo, bandeau, barrePhoto);
-  return { racine, video, calque, lienRA, gestes, cote, aide, vignettes, barre, barrePhoto, photo, bandeau, figer, fixer, recentrer };
+  const fermer = protegerXr(bouton('×', 'fermer', surFermer, { 'aria-label': textes.fermer }));
+  racine.append(gestes, calque, haut, fermer, barre, photo, bandeau, barrePhoto);
+  return { racine, video, calque, lienRA, gestes, cote, aide, vignettes, barre, barrePhoto, photo, bandeau, figer, fixer, recentrer, plus: telecommande.plus, moins: telecommande.moins };
 }

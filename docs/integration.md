@@ -67,6 +67,10 @@ Les adresses (`glb`, `usdz`, `vignette`, `logo`) sont relatives au fichier JSON.
 
 Dans l'aperçu caméra, « Fixer au sol » est le bouton principal. Sur iPhone, il ouvre la visionneuse Apple (Quick Look) avec la dalle à ras du sol ; sur Android, il pose la piscine au centre de l'écran, dans la page. « Photo » reste le bouton secondaire.
 
+**Taille dans la visionneuse Apple** : le lien n'impose pas d'échelle fixe (pas de `allowsContentScaling=0`). La piscine démarre à sa taille réelle (100 %) ; en intérieur, où la taille réelle est trop grande pour juger, on pince pour réduire, et Apple affiche le pourcentage pendant le pincement.
+
+**Plein écran et télécommande (modes caméra)** : pendant l'aperçu caméra (iPhone) et la RA (Android), `<piscine-ar>` prend tout l'écran (classe `plein-ecran` posée sur l'hôte, `position: fixed`) et Safari ne défile plus sous le doigt. Le bouton « × » en haut à droite ferme le mode et rend la page. Un pavé à flèches en bas à droite déplace la piscine de 0,25 m par appui (← →, et ↑ ↓ dans la direction du regard de la caméra projetée au sol), la tourne de 15° (⟲ ⟳) et, hors RA Android, change la taille de ×1,1 ou ÷1,1 (+ −). Un appui long répète toutes les 120 ms. En RA Android, le déplacement est mémorisé comme décalage par rapport à l'ancre posée, donc il tient quand l'ancre se met à jour. Les gestes au doigt restent disponibles. Textes personnalisables : `fermer`, `teleGauche`, `teleDroite`, `teleAvant`, `teleArriere`, `teleTournerGauche`, `teleTournerDroite`, `teleAgrandir`, `teleReduire`.
+
 ## L'événement `piscine-ar:photo` et le bouton devis
 
 Quand le visiteur touche « Photo », le composant émet `piscine-ar:photo` (une seule fois). `event.detail` contient `blob` (image PNG), `largeur`, `hauteur` et `modele`. La photo ne quitte pas le téléphone : c'est au site de décider quoi en faire.

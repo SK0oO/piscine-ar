@@ -4,7 +4,8 @@ import { PiscineArError } from '../core/erreurs.js';
 export const CLES_TEXTES = Object.freeze([
   'titre', 'explication', 'autoriser', 'reessayer', 'voirSansCamera', 'lancerCamera',
   'figer', 'enregistrer', 'reprendre', 'recentrer', 'balayerSol', 'viserContraste', 'voirEnRA', 'fixerSol',
-  'explicationQuickLook', 'voirDansJardin', 'changerModele', 'apercuCamera',
+  'explicationQuickLook', 'voirDansJardin', 'changerModele', 'apercuCamera', 'fermer',
+  'teleGauche', 'teleDroite', 'teleAvant', 'teleArriere', 'teleTournerGauche', 'teleTournerDroite', 'teleAgrandir', 'teleReduire',
 ]);
 
 const ID = /^[a-z0-9-]+$/;

@@ -23,6 +23,7 @@ export function createWebxrAdaptateur(deps) {
   let dernierReticule = null; // { hit, position }
   let dernierTactile = null;
   let ancre = null;
+  let decalage = { x: 0, z: 0 }; // télécommande : écart par rapport à l'ancre courante (la pose suit l'ancre + ce décalage)
   let jetonAncre = 0;
   let solTrouve = false;
   let debut = 0;
@@ -73,6 +74,7 @@ export function createWebxrAdaptateur(deps) {
 
   function poser(hit, position) {
     supprimerAncre();
+    decalage = { x: 0, z: 0 };
     pose.setPosition({ x: position.x, y: position.y, z: position.z });
     if (session?.enabledFeatures?.includes('anchors') && typeof hit.createAnchor === 'function') {
       const moi = jetonAncre;
@@ -133,7 +135,7 @@ export function createWebxrAdaptateur(deps) {
     // La pose suit l'ancre.
     if (ancre && frame.trackedAnchors?.has(ancre)) {
       const position = lirePose({ getPose: (e) => frame.getPose(ancre.anchorSpace, e) }, espace);
-      if (position) pose.setPosition(position);
+      if (position) pose.setPosition({ x: position.x + decalage.x, y: position.y, z: position.z + decalage.z });
     }
 
     stage.appliquerPose(pose.get());
@@ -329,6 +331,15 @@ export function createWebxrAdaptateur(deps) {
     return poser(dernierReticule.hit, dernierReticule.position);
   }
 
+  // Télécommande : déplace la piscine au sol de (dx, dz) mètres. Avec une ancre, le déplacement est mémorisé
+  // comme décalage relatif à l'ancre ; sans ancre, il modifie la pose libre.
+  function deplacer(dx, dz) {
+    if (fini) return;
+    const p = pose.get().position;
+    pose.setPosition({ x: p.x + dx, y: p.y, z: p.z + dz });
+    if (ancre) decalage = { x: decalage.x + dx, z: decalage.z + dz };
+  }
+
   function recentrer() {
     if (dernierReticule && !fini) poser(dernierReticule.hit, dernierReticule.position);
   }
@@ -340,6 +351,7 @@ export function createWebxrAdaptateur(deps) {
     stop,
     place,
     fixerAuSol,
+    deplacer,
     getPose: () => pose.get(),
     onFrame(cb) {
       abonnes.add(cb);
