@@ -434,8 +434,13 @@ export class PiscineAr extends HTMLElement {
       // et « Fixer au sol » (pose au centre) devient l'action principale.
       const capacites = adaptateur.capacites ?? { echelle: true, photo: true };
       masquer(this.#vue.figer, !capacites.photo);
-      masquer(this.#vue.plus, !capacites.echelle);
-      masquer(this.#vue.moins, !capacites.echelle);
+      // « + » et « − » gardent leur case dans la grille 3×3 : on les rend invisibles, pas absents.
+      for (const b of [this.#vue.plus, this.#vue.moins]) {
+        if (!b) continue;
+        b.style.visibility = capacites.echelle ? '' : 'hidden';
+        b.disabled = !capacites.echelle;
+        b.setAttribute('aria-hidden', capacites.echelle ? 'false' : 'true');
+      }
       masquer(this.#vue.recentrer, mode === 'webxr');
       masquer(this.#vue.fixer, mode !== 'webxr');
       this.#majPrincipal();

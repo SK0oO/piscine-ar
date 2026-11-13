@@ -337,7 +337,9 @@ export function createWebxrAdaptateur(deps) {
     if (fini) return;
     const p = pose.get().position;
     pose.setPosition({ x: p.x + dx, y: p.y, z: p.z + dz });
-    if (ancre) decalage = { x: decalage.x + dx, z: decalage.z + dz };
+    // Toujours cumulé : poser() le remet à zéro, et la boucle ne l'applique qu'avec une ancre.
+    // Sinon un déplacement fait avant la résolution de createAnchor() serait perdu.
+    decalage = { x: decalage.x + dx, z: decalage.z + dz };
   }
 
   function recentrer() {

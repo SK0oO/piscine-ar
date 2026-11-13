@@ -212,6 +212,19 @@ describe('createWebxrAdaptateur — place', () => {
     expect(apres.z).toBeCloseTo(-2.5, 5);
   });
 
+  it('deplacer() juste après place(), avant la résolution de l\'ancre, n\'est pas perdu', async () => {
+    const { adaptateur, ancres, image, hit } = await demarre();
+    image({ reticule: [hit(0.5, 0, -3)] });
+    adaptateur.place(100, 200);
+    adaptateur.deplacer(0.25, -0.5); // l'ancre n'est pas encore résolue
+    await flush();
+    image({ reticule: [] });
+    const apres = adaptateur.getPose().position;
+    expect(ancres.length).toBe(1);
+    expect(apres.x).toBeCloseTo(0.75, 5);
+    expect(apres.z).toBeCloseTo(-3.5, 5);
+  });
+
   it('deplacer() sans ancre modifie la pose libre ; un nouveau place() remet le décalage à zéro', async () => {
     const { adaptateur, image, hit } = await demarre();
     adaptateur.deplacer(1, 1);
