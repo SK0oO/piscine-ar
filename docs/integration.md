@@ -63,7 +63,9 @@ Si, exceptionnellement, le script doit rester hébergé ailleurs : utiliser un c
 
 Les adresses (`glb`, `usdz`, `vignette`, `logo`) sont relatives au fichier JSON. Leur origine doit être celle de la page ou celle du script, sinon le composant refuse la config (erreur `config-invalide`). Exemple de la démo : `demo/config/pisciniste-demo.json`.
 
-« Fixer au sol » est le bouton principal. Sur iPhone, il ouvre la visionneuse Apple (Quick Look) avec la dalle à ras du sol ; sur Android, il pose la piscine au centre de l'écran, dans la page. « Photo » reste le bouton secondaire.
+**iPhone (Quick Look supporté, pas de WebXR)** : l'accueil montre les vignettes de modèles et le bouton principal « Voir dans mon jardin », un lien Quick Look vers la dalle du modèle choisi (`<id>-sol.usdz`). L'iPhone reconnaît le sol et y place la piscine à sa vraie taille ; conseil au visiteur : dehors, en plein jour, visez le sol et attendez une seconde. Le lien secondaire « Aperçu caméra (sans suivi du sol) » lance l'ancien mode caméra et gyroscope (la caméra n'est demandée qu'à ce moment). Sur cet écran, `piscine-ar:ready` part avec `mode: 'quicklook'` et le modèle sélectionné, et `piscine-ar:model-changed` à chaque changement de vignette (`pose` = pose de départ). Ailleurs (Android, ou navigateur sans Quick Look), le flux « Activer la caméra » est inchangé.
+
+Dans l'aperçu caméra, « Fixer au sol » est le bouton principal. Sur iPhone, il ouvre la visionneuse Apple (Quick Look) avec la dalle à ras du sol ; sur Android, il pose la piscine au centre de l'écran, dans la page. « Photo » reste le bouton secondaire.
 
 ## L'événement `piscine-ar:photo` et le bouton devis
 

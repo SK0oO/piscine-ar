@@ -13,7 +13,7 @@ import { createRenderer } from '../core/renderer.js';
 import { formatMetres } from './format.js';
 import { TEXTES } from './textes.js';
 import { STYLES } from './styles.js';
-import { vueExplication, vueMessage, vuePiscine } from './vues.js';
+import { vueExplication, vueMessage, vuePiscine, vueQuickLook } from './vues.js';
 
 const CONFIG_TAILLE_MAX = 1024 * 1024; // 1 Mo
 const CONFIG_DELAI_MS = 10_000;
@@ -71,6 +71,7 @@ export class PiscineAr extends HTMLElement {
   #observeur = null;
   #adaptateur = null;
   #quicklook = null;
+  #accueil = null; // accueil iPhone : { vignettes, quicklook }
   #vue = null;
   #ecran = null;
   #occupe = false;
@@ -121,6 +122,7 @@ export class PiscineAr extends HTMLElement {
     this.#dimensions = null;
     this.#adaptateur = null;
     this.#vue = null;
+    this.#accueil = null;
     this.#ecran = null;
     this.#occupe = false;
     this.#gele = false;
@@ -190,7 +192,40 @@ export class PiscineAr extends HTMLElement {
     this.#racine.append(ecran);
   }
 
+  // iPhone : Quick Look (reconnaît le sol) est le flux principal, hors WebXR et si le navigateur le supporte.
+  #montrerAccueilQuickLook() {
+    const vie = this.#vie;
+    const vue = vueQuickLook({
+      textes: this.#textes,
+      config: this.#config,
+      surVignette: (m) => {
+        this.#accueil?.quicklook.setModele(m);
+        this.#choisirModele(m);
+      },
+      surCamera: () => this.#activer(this.#choix.mode),
+    });
+    const quicklook = createQuickLookAdaptateur({ calque: vue.lienRA, env: { document }, libelle: this.#textes.voirDansJardin, action: this.#textes.changerModele });
+    vue.lienRA.querySelector('a')?.classList.add('principal');
+    const courant = this.#switcher.courant();
+    const initial = this.#config.modeles.find((m) => m.id === (courant?.id ?? this.#config.modeleParDefaut));
+    if (initial) quicklook.setModele(initial);
+    this.#montrerEcran(vue.ecran);
+    this.#accueil = { vignettes: vue.vignettes, quicklook };
+    this.#majVignettes();
+    this.#modelePret.then(() => {
+      const modele = this.#switcher.courant();
+      if (vie === this.#vie && this.#ecran === vue.ecran && modele) {
+        this.#emettre('ready', { mode: 'quicklook', modele: modele.id, quicklook: true });
+      }
+    });
+  }
+
   #montrerExplication(erreur) {
+    this.#accueil = null;
+    if (!erreur && this.#choix?.mode !== 'webxr' && quickLookSupporte(document)) {
+      this.#montrerAccueilQuickLook();
+      return;
+    }
     const camera = this.#choix?.mode !== 'sans-camera';
     this.#montrerEcran(vueExplication({
       textes: this.#textes,
@@ -275,7 +310,7 @@ export class PiscineAr extends HTMLElement {
 
   #majVignettes() {
     const actif = this.#switcher.courant()?.id;
-    for (const [id, b] of this.#vue?.vignettes ?? []) b.setAttribute('aria-pressed', String(id === actif));
+    for (const [id, b] of this.#vue?.vignettes ?? this.#accueil?.vignettes ?? []) b.setAttribute('aria-pressed', String(id === actif));
   }
 
   // Une seule action principale (bouton blanc) : « Fixer au sol » (lien Quick Look ou pose RA), sinon « Photo ».

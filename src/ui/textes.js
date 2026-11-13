@@ -14,6 +14,10 @@ export const TEXTES = Object.freeze({
   viserContraste: 'Visez une zone contrastée',
   voirEnRA: 'Fixer au sol',
   fixerSol: 'Fixer au sol',
+  explicationQuickLook: "Choisissez un modèle, puis posez-le dans votre jardin. L'iPhone reconnaît le sol et y place la piscine à sa vraie taille. Dehors, en plein jour, visez le sol et attendez une seconde.",
+  voirDansJardin: 'Voir dans mon jardin',
+  changerModele: 'Changer de modèle',
+  apercuCamera: 'Aperçu caméra (sans suivi du sol)',
   // Textes sans clé dans le JSON du pisciniste.
   chargement: 'Chargement…',
   aide: 'Glissez pour déplacer · deux doigts pour tourner',

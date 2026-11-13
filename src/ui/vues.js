@@ -37,6 +37,33 @@ export function vueExplication({ textes, config, erreur, reessayer, sansCamera, 
   return ecran;
 }
 
+// Vignettes de sélection des modèles (écran de la piscine et accueil Quick Look).
+function vignettesModeles(config, surVignette) {
+  const vignettes = new Map();
+  const modeles = el('div', { classe: 'modeles' });
+  for (const m of config.modeles) {
+    const b = el('button', { classe: 'modele', attrs: { type: 'button', 'data-modele': m.id, 'aria-pressed': 'false' } },
+      el('img', { attrs: { src: m.vignette, alt: '' } }), el('span', { texte: m.nom }));
+    b.addEventListener('click', () => surVignette(m));
+    vignettes.set(m.id, b);
+    modeles.append(b);
+  }
+  return { modeles, vignettes };
+}
+
+// Accueil iPhone : vignettes, lien Quick Look (construit par le composant dans `lienRA`) et lien secondaire « Aperçu caméra ».
+export function vueQuickLook({ textes, config, surVignette, surCamera }) {
+  const ecran = el('div', { classe: 'ecran', role: 'explication-quicklook' });
+  ecran.append(el('p', { classe: 'marque', texte: config.pisciniste.nom }));
+  ecran.append(el('h2', { texte: textes.titre }));
+  ecran.append(el('p', { texte: textes.explicationQuickLook }));
+  const { modeles, vignettes } = vignettesModeles(config, surVignette);
+  protegerXr(modeles);
+  const lienRA = el('div', { classe: 'lien-ra', role: 'lien-ra' });
+  ecran.append(modeles, lienRA, bouton(textes.apercuCamera, 'lien', surCamera));
+  return { ecran, vignettes, lienRA };
+}
+
 // Vue principale. Renvoie la racine et les éléments que le composant pilote.
 export function vuePiscine({ config, textes, canvas, avecVideo, surVignette, surFiger, surFixer, surRecentrer, surEnregistrer, surReprendre }) {
   let video = null;
@@ -59,15 +86,7 @@ export function vuePiscine({ config, textes, canvas, avecVideo, surVignette, sur
   const haut = protegerXr(el('div', { classe: 'haut' }, pastille, cote));
 
   const aide = el('p', { classe: 'aide', texte: textes.aide });
-  const vignettes = new Map();
-  const modeles = el('div', { classe: 'modeles' });
-  for (const m of config.modeles) {
-    const b = el('button', { classe: 'modele', attrs: { type: 'button', 'data-modele': m.id, 'aria-pressed': 'false' } },
-      el('img', { attrs: { src: m.vignette, alt: '' } }), el('span', { texte: m.nom }));
-    b.addEventListener('click', () => surVignette(m));
-    vignettes.set(m.id, b);
-    modeles.append(b);
-  }
+  const { modeles, vignettes } = vignettesModeles(config, surVignette);
   const figer = bouton(textes.figer, 'btn principal', surFiger); // « Photo » ; le composant l'adoucit si une autre action est principale
   const fixer = bouton(textes.fixerSol, 'btn', surFixer); // « Fixer au sol » (RA Android) : pose au centre
   fixer.hidden = true;

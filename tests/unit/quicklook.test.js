@@ -27,6 +27,20 @@ function creer() {
 }
 const lien = (calque) => trouver(calque, 'a')[0];
 
+describe('urlQuickLook : action personnalisée', () => {
+  it("encode l'action d'appel (accueil iPhone : « Changer de modèle »)", () => {
+    expect(urlQuickLook(A.usdz, { titre: 'T', action: 'Changer de modèle' }))
+      .toBe(`${A.usdz}#allowsContentScaling=0&callToAction=Changer%20de%20mod%C3%A8le&checkoutTitle=T`);
+  });
+  it("l'adaptateur applique l'action donnée au href", () => {
+    const document = creerDocumentFactice();
+    const calque = creerElementFactice();
+    const adaptateur = createQuickLookAdaptateur({ calque, env: { document }, action: 'Changer de modèle' });
+    adaptateur.setModele(A);
+    expect(lien(calque).href).toContain('callToAction=Changer%20de%20mod%C3%A8le');
+  });
+});
+
 describe('urlQuickLook', () => {
   it('retire un fragment déjà présent dans l\'URL du usdz', () => {
     const u = urlQuickLook('https://site.fr/p.usdz#x=1', { titre: 'T' });

@@ -1,10 +1,11 @@
 import { PiscineArError } from '../core/erreurs.js';
 
-const FRAGMENT = '#allowsContentScaling=0&callToAction=Revenir%20au%20site&checkoutTitle=';
+const FRAGMENT = (action) => `#allowsContentScaling=0&callToAction=${encodeURIComponent(action)}&checkoutTitle=`;
+const ACTION_DEFAUT = 'Revenir au site';
 
-export function urlQuickLook(usdz, { titre }) {
+export function urlQuickLook(usdz, { titre, action = ACTION_DEFAUT }) {
   const base = String(usdz).split('#')[0]; // un fragment déjà présent annulerait les paramètres Quick Look
-  return base + FRAGMENT + encodeURIComponent(titre);
+  return base + FRAGMENT(action) + encodeURIComponent(titre);
 }
 
 export function supporte(document) {
@@ -16,7 +17,7 @@ export function supporte(document) {
 }
 
 // Lien Quick Look : un <a rel="ar"> avec une seule <img> (contrainte Apple), le libellé en texte à côté.
-export function createQuickLookAdaptateur({ calque, env, libelle }) {
+export function createQuickLookAdaptateur({ calque, env, libelle, action }) {
   const doc = env.document;
   const a = doc.createElement('a');
   a.setAttribute('rel', 'ar');
@@ -46,7 +47,7 @@ export function createQuickLookAdaptateur({ calque, env, libelle }) {
         a.hidden = true;
         return;
       }
-      a.href = urlQuickLook(modele.usdz, { titre: modele.nom });
+      a.href = urlQuickLook(modele.usdz, { titre: modele.nom, action });
       img.setAttribute('src', modele.vignette ?? '');
       a.hidden = false;
     },

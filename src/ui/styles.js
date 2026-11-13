@@ -47,5 +47,7 @@ button { font: inherit; font-size: 16px; color: #fff; cursor: pointer; }
 .ecran .marque { margin: 0 0 12px; font-size: 16px; color: #9fb3c4; }
 .ecran .erreur { padding: 10px 14px; border-radius: 14px; background: rgba(255, 255, 255, .12); color: #fff; }
 .ecran .btn { flex: 0 0 56px; width: 100%; margin-bottom: 12px; }
+.ecran .modeles { margin-bottom: 18px; }
+.ecran .lien-ra a { flex: 0 0 56px; width: 100%; margin-bottom: 12px; }
 .ecran .lien { background: none; border: 0; padding: 12px; font-size: 16px; color: #cfe0ee; text-decoration: underline; text-align: center; }
 `;
