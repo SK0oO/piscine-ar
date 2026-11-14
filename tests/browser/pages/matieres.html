@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Page de test matières — piscine-ar</title>
+<style>html, body { margin: 0; height: 100%; } piscine-ar { display: block; width: 100%; height: 100vh; }</style>
+<script>
+  window.__evts = [];
+  for (const type of ['ready', 'model-changed', 'photo', 'error']) {
+    document.addEventListener('piscine-ar:' + type, (e) => { window.__evts.push({ type, ...(e.detail || {}) }); });
+  }
+</script>
+</head>
+<body>
+<script type="module">
+  // Lecture seule : on observe le renderer et la scène du composant (privés) en enveloppant
+  // WebGLRenderer.prototype.render, avant de charger le composant. Aucun code du composant n'est modifié.
+  import * as THREE from 'three';
+  window.__THREE_ACES = THREE.ACESFilmicToneMapping;
+  // `render` est posée par le constructeur sur chaque instance : un accesseur sur le prototype l'intercepte à l'affectation.
+  Object.defineProperty(THREE.WebGLRenderer.prototype, 'render', {
+    configurable: true,
+    set(fn) {
+      const renderer = this;
+      Object.defineProperty(renderer, 'render', {
+        configurable: true, writable: true,
+        value(scene, camera) { window.__rendu = { renderer, scene }; return fn.call(renderer, scene, camera); },
+      });
+    },
+  });
+  const chemin = '/src/index.js';
+  import(/* @vite-ignore */ chemin).then(
+    () => { window.__chargement = 'ok'; },
+    (e) => { window.__chargement = 'erreur : ' + (e && e.message); },
+  );
+</script>
+<piscine-ar config="../fixtures/piscinier.json"></piscine-ar>
+</body>
+</html>

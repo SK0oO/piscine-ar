@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import * as THREE from 'three';
-import { createModelSwitcher } from '../../src/core/models.js';
+import { createModelSwitcher, animerEau } from '../../src/core/models.js';
 import { PiscineArError } from '../../src/core/erreurs.js';
 import { creerChargeurFactice, fabriquerModele, estLibere } from './fakes/chargeur.js';
 
@@ -131,5 +131,63 @@ describe('createModelSwitcher', () => {
     const res = await p;
     expect(res.dimensions.longueur).toBeCloseTo(6, 5);
     expect(res.dimensions.largeur).toBeCloseTo(2, 5);
+  });
+});
+
+// ---- Lot M1 : l'eau bouge (plan §11.3) ----
+describe('animerEau', () => {
+  const racineAvecEau = () => {
+    const racine = new THREE.Group();
+    const normalMap = new THREE.DataTexture(new Uint8Array([128, 128, 255, 255]), 1, 1);
+    const eau = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), new THREE.MeshStandardMaterial({ normalMap }));
+    eau.name = 'eau';
+    const margelle = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), new THREE.MeshStandardMaterial());
+    margelle.name = 'margelle';
+    racine.add(margelle, eau);
+    return { racine, normalMap };
+  };
+
+  it('est exportée par src/core/models.js', () => {
+    expect(typeof animerEau).toBe('function');
+  });
+
+  it('animerEau(racine, 0.5) déplace normalMap.offset d\'environ 0,015 sur chaque axe', () => {
+    const { racine, normalMap } = racineAvecEau();
+    animerEau(racine, 0.5);
+    expect(Math.abs(normalMap.offset.x)).toBeCloseTo(0.015, 2);
+    expect(Math.abs(normalMap.offset.y)).toBeCloseTo(0.015, 2);
+    expect(Math.abs(normalMap.offset.x)).toBeGreaterThan(0.01);
+    expect(Math.abs(normalMap.offset.y)).toBeGreaterThan(0.01);
+  });
+
+  it('deux appels cumulent le déplacement (0,5 s puis 0,5 s ≈ 1 s)', () => {
+    const { racine, normalMap } = racineAvecEau();
+    animerEau(racine, 0.5);
+    animerEau(racine, 0.5);
+    expect(Math.abs(normalMap.offset.x)).toBeCloseTo(0.03, 2);
+    expect(Math.abs(normalMap.offset.y)).toBeCloseTo(0.03, 2);
+  });
+
+  it('ne touche pas aux autres maillages', () => {
+    const { racine } = racineAvecEau();
+    const avant = racine.getObjectByName('margelle').material.clone();
+    animerEau(racine, 1);
+    expect(racine.getObjectByName('margelle').material.normalMap).toBe(avant.normalMap);
+  });
+
+  it('sans maillage eau, ne lève pas', () => {
+    const racine = new THREE.Group();
+    racine.add(new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), new THREE.MeshBasicMaterial()));
+    expect(typeof animerEau).toBe('function');
+    expect(() => animerEau(racine, 0.5)).not.toThrow();
+  });
+
+  it('eau sans normalMap, ne lève pas', () => {
+    const racine = new THREE.Group();
+    const eau = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), new THREE.MeshStandardMaterial());
+    eau.name = 'eau';
+    racine.add(eau);
+    expect(typeof animerEau).toBe('function');
+    expect(() => animerEau(racine, 0.5)).not.toThrow();
   });
 });
