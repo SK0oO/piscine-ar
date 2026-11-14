@@ -7,9 +7,9 @@ import { PiscineArError } from '../core/erreurs.js';
 import { createStage } from '../core/stage.js';
 import { createPoseStore, decalerSelonDirection, POSE_DEPART } from '../core/pose.js';
 import { createGestureTracker } from '../core/gestures.js';
-import { createModelSwitcher } from '../core/models.js';
+import { createModelSwitcher, animerEau } from '../core/models.js';
 import { chargerGlb } from '../core/loader.js';
-import { createRenderer } from '../core/renderer.js';
+import { createRenderer, creerEnvironnement } from '../core/renderer.js';
 import { formatMetres } from './format.js';
 import { TEXTES } from './textes.js';
 import { STYLES } from './styles.js';
@@ -72,6 +72,7 @@ export class PiscineAr extends HTMLElement {
   #modeleEchec = false;
   #dimensions = null;
   #renderer = null;
+  #dernierRendu = null;
   #observeur = null;
   #adaptateur = null;
   #quicklook = null;
@@ -354,6 +355,7 @@ export class PiscineAr extends HTMLElement {
     let adaptateur;
     try {
       this.#renderer ??= createRenderer();
+      this.#stage.scene.environment = creerEnvironnement(this.#renderer);
       this.#pose = createPoseStore({ echelleLibre: mode !== 'webxr', initiale: this.#pose.get() });
       const vue = vuePiscine({
         config: this.#config,
@@ -469,6 +471,10 @@ export class PiscineAr extends HTMLElement {
   // --- rendu, taille, gestes ----------------------------------------------
 
   #rendre() {
+    const maintenant = performance.now();
+    const dt = this.#dernierRendu === null ? 0 : Math.min((maintenant - this.#dernierRendu) / 1000, 0.1);
+    this.#dernierRendu = maintenant;
+    animerEau(this.#stage.pivot, dt);
     this.#stage.appliquerPose(this.#pose.get());
     this.#renderer.render(this.#stage.scene, this.#stage.camera);
   }

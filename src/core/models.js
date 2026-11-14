@@ -55,3 +55,14 @@ export function createModelSwitcher({ pivot, charger }) {
 
   return { selectionner, courant: publique };
 }
+
+// L'eau bouge : la normal map de l'eau défile de 0,03 unité de texture par seconde sur chaque axe
+// (≈ 0,06 m/s pour une période de 2 m). Pure Three, sans DOM ; sans maillage `eau` ou sans normalMap, ne fait rien.
+const VITESSE_EAU = 0.03;
+export function animerEau(racine, dt) {
+  const eau = racine?.getObjectByName?.('eau');
+  const t = eau?.material?.normalMap;
+  if (!t) return;
+  t.offset.x = (t.offset.x + VITESSE_EAU * dt) % 1;
+  t.offset.y = (t.offset.y + VITESSE_EAU * dt) % 1;
+}
