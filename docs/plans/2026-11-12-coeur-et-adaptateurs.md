@@ -331,3 +331,46 @@ PLAN PRÊT
 
 - Le bouton photo s'appelle « Photo » (ex-« Figer »). L'action principale est « Fixer au sol » : sur iPhone, c'est le lien Quick Look (ex-« Échelle réelle ») vers `<id>-sol.usdz`, une dalle à ras du sol (margelle + eau à −0,02 + fond à −0,05) ; sur Android, un bouton qui appelle `fixerAuSol()` (pose au réticule du centre). Un seul bouton principal à la fois (`#majPrincipal`).
 - Les mentions « Figer » et « Échelle réelle » des §7 et §9 sont remplacées par ces noms.
+
+## 11. Lot M1 « matières réalistes » (14/11/2026, go d'Alex après le rapport de recherche)
+
+Source : /Users/alexandre/Documents/Alex Cerveau/DREAM/1-Projets/Piscine-AR/recherche/reports/Réalisme et sol en AR piscine.md (§1, « Détail technique », recommandation n° 2). Constat d'Alex sur iPhone : « ça fait 3D mais très plat ». Cause établie : couleurs unies, aucune normal map, roughness uniforme, aucune AO. Le lot ne touche ni au sol, ni au figer, ni à l'effet enterré (lots suivants).
+
+### 11.1 Ce qui change
+- Chaque surface reçoit une **matière PBR** générée en procédural (règle 0 €, rien de téléchargé) : couleur de base (sRGB), normal map (convention OpenGL = celle de Three.js, PNG), roughness variée, AO. Pas de vertex colors, pas de lumière dans le fichier, pas d'ombre cuite (Quick Look fait l'ombre lui-même), **plus aucun `DoubleSide`** (RealityKit ne le gère pas).
+- Trois matières : `pierre` (margelle : pierre claire, grain, pores, veines légères, joints tous les ~0,6 m, roughness 0,75–0,95), `mosaique` (parois, fond, escalier, plage : carreaux de 5 cm, joints de 4 mm, normal biseautée, roughness carreau ≈ 0,25 et joint ≈ 0,9 ; texture de couleur **quasi neutre en luminance** pour que `material.color` = couleur d'eau du JSON donne la teinte, comme aujourd'hui), `ondulations` (eau : normal map de rides, tuilable, 2 m de période ; matériau transparent, opacity 0,65, roughness 0,08, metalness 0, FrontSide, couleur d'eau).
+- **UV en mètres partout** : ExtrudeGeometry et ShapeGeometry les donnent déjà (positions x,y) ; `bassinGeo` reçoit un attribut `uv` (u = longueur d'arc le long du contour, v = profondeur) ; les boîtes d'escalier reçoivent des UV à l'échelle de chaque face. Les textures fixent leur taille physique par `texture.repeat = 1 / tailleEnMetres` (pierre 1 m, mosaïque 0,5 m = 10 carreaux, eau 2 m). glTF : `KHR_texture_transform` (GLTFExporter l'écrit seul) ; USDZ : `UsdTransform2d` (un par matériau, c'est la limite Apple).
+- **Export dans Chromium** (Playwright, déjà utilisé pour les vignettes) : GLTFExporter et USDZExporter ont besoin d'un canvas pour encoder les textures ; Node n'en a pas. `models/generate/index.js` sert la racine avec Vite, ouvre `models/generate/export.html`, qui construit les scènes (`buildPool`) et renvoie GLB + USDZ + USDZ sol en base64 ; Node écrit les fichiers. USDZExporter appelé avec `{ quickLookCompatible: true, maxTextureSize: 1024 }`.
+- `buildPool` reste utilisable en Node (tests) : les textures sont des `DataTexture` construites depuis les tableaux RGBA de `textures.js` ; aucun canvas avant l'export.
+- Budgets : GLB < 4 Mo (contrat), chaque USDZ < 5 Mo, textures ≤ 1024², couleur de base en JPEG (`texture.userData.mimeType = 'image/jpeg'`, lu par les deux exporteurs), normal et ORM en PNG, mosaïque et eau en 512² (motifs réguliers), pierre en 1024².
+- Côté composant (Android) et page d'aperçu : `renderer.toneMapping = ACESFilmicToneMapping`, `scene.environment` = PMREM de `RoomEnvironment` (reflets sur l'eau et la pierre, en attendant `light-estimation`), et l'eau **bouge** : `animerEau(racine, dt)` fait défiler `normalMap.offset` du maillage `eau` (vitesse ≈ 0,03 m/s sur deux axes). Dans l'USDZ l'eau est immobile (USDZExporter n'exporte pas ça ; accepté).
+- Page d'aperçu : sol vert herbe (bruit procédural) à la place du gris, pour que les vignettes montrent ce qu'Alex verra.
+
+### 11.2 Fichiers → écrivain
+| Fichier | Rôle | Écrivain |
+|---|---|---|
+| `models/generate/textures.js` (nouveau) | PRNG à graine, bruit de valeur tuilable, `pierre(taille)`, `mosaique(taille)`, `ondulations(taille)`, `hauteurVersNormale(h, force)`, `empaqueterORM(ao, rough, metal)` → `{ largeur, hauteur, data: Uint8Array RGBA }`, pur (sans Three, sans canvas) | dev-code |
+| `models/generate/materiaux.js` (nouveau) | `creerMateriaux(params, couleurEau)` → `{ margelle, mosaique, mosaiqueClaire, fond, eau }` (MeshStandardMaterial avec DataTexture, repeat en mètres, colorSpace : map = SRGBColorSpace, autres = NoColorSpace, `wrapS/T = RepeatWrapping`, `userData.mimeType`), textures mises en cache par matière | dev-code |
+| `models/generate/pool.js` | utilise `creerMateriaux`, UV sur `bassinGeo` et escalier, plus aucun DoubleSide, parois orientées vers l'intérieur | dev-code |
+| `models/generate/export.html` + `export.js` (nouveaux) | page d'export : `window.exporter(params, options)` → `{ glb, usdz, usdzSol }` base64 | dev-code |
+| `models/generate/index.js` | lance Vite + Chromium, appelle l'export, écrit les fichiers, puis les vignettes comme avant | dev-code |
+| `demo/preview.js` | environnement PMREM, sol herbe, eau animée ; conserve les boutons de couleur d'eau (teinte par `material.color`) | dev-code |
+| `src/core/renderer.js` | `toneMapping` ACESFilmic, `creerEnvironnement(renderer)` (PMREM RoomEnvironment, mis en cache, `dispose`) | dev-code |
+| `src/core/models.js` | `animerEau(racine, dt)` exportée, pure Three (pas de DOM) | dev-code |
+| `src/ui/piscine-ar.js` | `scene.environment = creerEnvironnement(renderer)` à l'activation ; `animerEau` appelée dans la boucle de rendu avec le delta | dev-code |
+| `tests/unit/textures.test.js`, `tests/unit/materiaux.test.js`, ajouts dans `pool.test.js`, `generate.test.js`, `models.test.js` ; `tests/browser/matieres.spec.js` | contrat | dev-testeur |
+
+### 11.3 Ce que les tests doivent prouver (dev-testeur, ROUGE d'abord)
+- textures : déterministe (même graine → mêmes octets) ; tailles puissance de 2 ; **tuilable** (colonne 0 ≈ colonne n−1 et ligne 0 ≈ ligne n−1, écart moyen < 8/255) ; normal map : moyenne de B > 200, moyennes de R et G entre 118 et 138 ; roughness : écart-type > 0,04 et valeurs dans [0,05 ; 1] ; mosaïque : part de joints entre 10 % et 20 % de la surface ; pierre : luminance moyenne de la couleur de base > 0,6 (pierre claire).
+- materiaux : chaque matériau a `map`, `normalMap`, `roughnessMap` (eau : `normalMap` seulement + `transparent`, `opacity` ∈ [0,55 ; 0,75], `roughness` ≤ 0,15) ; `map.colorSpace === SRGBColorSpace`, les autres `NoColorSpace` ; `repeat` cohérent avec la taille physique (pierre 1 m → repeat 1, mosaïque 0,5 m → repeat 2, eau 2 m → 0,5) ; aucun `side === DoubleSide` ; `mosaique.color` = couleur d'eau ; `map.userData.mimeType === 'image/jpeg'`.
+- pool : tous les maillages ont un attribut `uv` ; étendue des UV du maillage `margelle` ≈ étendue en mètres (8,6 × 4,6 à 5 % près pour le rectangle) ; `bassin` : u va de 0 au périmètre (à 5 %), v de −profondeur à −épaisseur ; normales des parois du bassin pointent vers l'intérieur (produit scalaire avec (centre − point) > 0 pour > 95 % des sommets) ; tests existants intacts (triangles < 20 000, dimensions, noms).
+- generate : GLB < 4 Mo, USDZ < 5 Mo chacun ; JSON du GLB : `images[]` non vide avec `mimeType` (jpeg et png présents), aucun `uri` externe, `KHR_texture_transform` dans `extensionsUsed`, `textures[]` ≥ 4 ; USDZ : archive zip contenant `textures/` (≥ 4 fichiers) et un `.usda` avec `UsdUVTexture`, `inputs:normal.connect`, `inputs:roughness.connect`, `subdivisionScheme = "none"`, et **aucun** `doubleSided = true` ; `-sol.usdz` idem.
+- models : `animerEau(racine, 0.5)` déplace `normalMap.offset` du maillage `eau` d'environ 0,015 sur chaque axe ; sans maillage `eau` → ne lève pas.
+- navigateur (`matieres.spec.js`) : le composant charge le vrai GLB texturé (`piscine-ar:ready`, aucune `piscine-ar:error`), `renderer.toneMapping` = ACESFilmic, `scene.environment` non nul en mode caméra, l'offset de l'eau change entre deux images.
+- Vignettes 512² régénérées ; captures 1024² pour Alex dans `demo/captures/M1/` (3 modèles × vue 3/4) par `scripts/capture-page.mjs`.
+
+### 11.4 Risques
+- Poids : du bruit en PNG compresse mal → couleur en JPEG, normal/ORM en PNG, 512² pour les motifs réguliers ; test de taille bloquant.
+- Quick Look et `repeat` : bug connu de l'ordre des opérations, d'où `quickLookCompatible: true` ; vérifier sur l'iPhone d'Alex que les carreaux font bien 5 cm.
+- `material.color` × texture : glTF le fait (`baseColorFactor`), USDZExporter le fait par `inputs:scale` du `UsdUVTexture` ; test : le `.usda` contient un `inputs:scale` non blanc pour la mosaïque.
+- Export dans Chromium : si le GPU logiciel manque, l'export n'a pas besoin de WebGL (encodage canvas 2D seulement) ; garder `--use-angle=swiftshader` pour les vignettes.
