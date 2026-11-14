@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { creerMateriaux } from './materiaux.js';
 
 const SEG = 96; // points par contour : assez lisse, bien sous 20 000 triangles
 const NIVEAU_EAU = -0.15;
@@ -113,22 +114,27 @@ function margelleGeo(interieur, exterieur, ep) {
   return g;
 }
 
-// Parois (de sous la margelle à -prof) + fond, un seul maillage, sommets non partagés.
+// Parois seules (de sous la margelle à -prof). UV en mètres : u = longueur d'arc le long du contour, v = y.
+// La couture du contour est dupliquée (u = périmètre) pour que la texture ne s'étire pas sur le dernier pan.
 function bassinGeo(pts, prof, ep) {
   const pos = [];
+  const uv = [];
   const idx = [];
   const n = pts.length;
-  for (const p of pts) pos.push(p.x, -ep, p.z, p.x, -prof, p.z); // haut (sous la margelle) puis bas, dans l'ordre du contour
-  for (let i = 0; i < n; i++) {
-    const a = i * 2, b = ((i + 1) % n) * 2;
-    idx.push(a, a + 1, b, b, a + 1, b + 1);
+  let arc = 0;
+  for (let i = 0; i <= n; i++) {
+    const p = pts[i % n];
+    if (i > 0) { const q = pts[i - 1]; arc += Math.hypot(p.x - q.x, p.z - q.z); }
+    pos.push(p.x, -ep, p.z, p.x, -prof, p.z); // haut (sous la margelle) puis bas, dans l'ordre du contour
+    uv.push(arc, -ep, arc, -prof);
   }
-  const base = pos.length / 3;
-  for (const p of pts) pos.push(p.x, -prof, p.z);
-  const tri = THREE.ShapeUtils.triangulateShape(pts.map((p) => new THREE.Vector2(p.x, p.z)), []);
-  for (const [a, b, c] of tri) idx.push(base + a, base + c, base + b);
+  for (let i = 0; i < n; i++) {
+    const a = i * 2, b = (i + 1) * 2;
+    idx.push(a, a + 1, b, b, a + 1, b + 1); // faces vers l'intérieur du bassin
+  }
   const g = new THREE.BufferGeometry();
   g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+  g.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2));
   g.setIndex(idx);
   g.computeVertexNormals();
   return g;
@@ -152,6 +158,22 @@ function plageGeo(pts, longueur, haut, prof) {
   return g;
 }
 
+// UV en mètres sur chaque face : dessus/dessous (u = x, v = z), côtés (u = y, v = horizontale).
+function uvBoite(geo) {
+  const pos = geo.attributes.position, nor = geo.attributes.normal;
+  const uv = new Float32Array(pos.count * 2);
+  for (let i = 0; i < pos.count; i++) {
+    const vertical = Math.abs(nor.getY(i)) > 0.5;
+    if (vertical) { uv[i * 2] = pos.getX(i); uv[i * 2 + 1] = pos.getZ(i); }
+    else {
+      uv[i * 2] = pos.getY(i);
+      uv[i * 2 + 1] = Math.abs(nor.getX(i)) > 0.5 ? pos.getZ(i) : pos.getX(i);
+    }
+  }
+  geo.setAttribute('uv', new THREE.BufferAttribute(uv, 2));
+  return geo;
+}
+
 function escalierGroupe(params, matMarche) {
   const { longueur: L, largeur: W, profondeur: prof } = params;
   const n = params.escalier.marches;
@@ -165,7 +187,7 @@ function escalierGroupe(params, matMarche) {
     const top = -haut * (i + 1);
     const taille = 0.5 * (i + 1);
     const h = prof + top;
-    const box = new THREE.BoxGeometry(taille, h, taille);
+    const box = uvBoite(new THREE.BoxGeometry(taille, h, taille));
     const m = new THREE.Mesh(box, matMarche);
     m.name = `marche-${i + 1}`;
     m.position.set(cx - taille / 2, top - h / 2, cz - taille / 2);
@@ -184,46 +206,37 @@ export function buildPool(params, { eau, dalle = false } = {}) {
   const exterieur = decale(interieur, params.margelle.largeur);
   const prof = params.profondeur;
 
-  const liner = new THREE.Color(couleurEau);
-  const matMargelle = new THREE.MeshStandardMaterial({ name: 'margelle', color: params.margelle.couleur, roughness: 0.85 });
-  const matBassin = new THREE.MeshStandardMaterial({ name: 'liner', color: liner, roughness: 0.7, side: THREE.DoubleSide });
-  const matMarche = new THREE.MeshStandardMaterial({
-    name: 'liner-clair', color: liner.clone().lerp(new THREE.Color('#ffffff'), 0.35), roughness: 0.7,
-  });
-  const matEau = new THREE.MeshStandardMaterial({
-    name: 'eau', color: liner, roughness: 0.1, metalness: 0, transparent: true, opacity: 0.6, side: THREE.DoubleSide,
-  });
+  const mat = creerMateriaux(params, couleurEau);
 
   const groupe = new THREE.Group();
   groupe.name = params.id;
 
   if (dalle) {
     // Margelle (dessus à y = 0) + eau + fond sombre : pas de parois ni de fond profond, point le plus bas à -0,05.
-    const matFond = new THREE.MeshStandardMaterial({
-      name: 'fond', color: liner.clone().lerp(new THREE.Color('#000000'), 0.6), roughness: 0.9,
-    });
-    const margelleDalle = new THREE.Mesh(margelleGeo(interieur, exterieur, params.margelle.epaisseur), matMargelle);
+    const margelleDalle = new THREE.Mesh(margelleGeo(interieur, exterieur, params.margelle.epaisseur), mat.margelle);
     margelleDalle.name = 'margelle';
-    const fond = new THREE.Mesh(planGeo(interieur, DALLE_FOND), matFond);
+    const fond = new THREE.Mesh(planGeo(interieur, DALLE_FOND), mat.fond);
     fond.name = 'fond';
-    const eauDalle = new THREE.Mesh(planGeo(interieur, DALLE_EAU), matEau);
+    const eauDalle = new THREE.Mesh(planGeo(interieur, DALLE_EAU), mat.eau);
     eauDalle.name = 'eau';
     groupe.add(margelleDalle, fond, eauDalle);
     groupe.traverse((o) => { if (o.isMesh) { o.castShadow = o.name !== 'eau'; o.receiveShadow = true; } });
     return groupe;
   }
 
-  const margelle = new THREE.Mesh(margelleGeo(interieur, exterieur, params.margelle.epaisseur), matMargelle);
+  const margelle = new THREE.Mesh(margelleGeo(interieur, exterieur, params.margelle.epaisseur), mat.margelle);
   margelle.name = 'margelle';
-  const bassin = new THREE.Mesh(bassinGeo(interieur, prof, params.margelle.epaisseur), matBassin);
+  const bassin = new THREE.Mesh(bassinGeo(interieur, prof, params.margelle.epaisseur), mat.mosaique);
   bassin.name = 'bassin';
-  const plan = new THREE.Mesh(planGeo(interieur, NIVEAU_EAU), matEau);
+  const fond = new THREE.Mesh(planGeo(interieur, -prof), mat.fond);
+  fond.name = 'fond';
+  const plan = new THREE.Mesh(planGeo(interieur, NIVEAU_EAU), mat.eau);
   plan.name = 'eau';
-  groupe.add(margelle, bassin);
+  groupe.add(margelle, bassin, fond);
 
-  if (params.escalier) groupe.add(escalierGroupe(params, matMarche));
+  if (params.escalier) groupe.add(escalierGroupe(params, mat.mosaiqueClaire));
   if (params.plageImmergee) {
-    const plage = new THREE.Mesh(plageGeo(interieur, params.longueur, params.plageImmergee, prof), matMarche);
+    const plage = new THREE.Mesh(plageGeo(interieur, params.longueur, params.plageImmergee, prof), mat.mosaiqueClaire);
     plage.name = 'plage';
     groupe.add(plage);
   }
