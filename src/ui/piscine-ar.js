@@ -122,7 +122,7 @@ export class PiscineAr extends HTMLElement {
 
   #initialiser() {
     this.#stage = createStage();
-    this.#pose = createPoseStore({ echelleLibre: true });
+    this.#pose = createPoseStore({ echelleLibre: false });
     this.#switcher = createModelSwitcher({ pivot: this.#stage.pivot, charger: chargerGlb });
     this.#config = null;
     this.#textes = TEXTES;
@@ -356,7 +356,7 @@ export class PiscineAr extends HTMLElement {
     try {
       this.#renderer ??= createRenderer();
       this.#stage.scene.environment = creerEnvironnement(this.#renderer);
-      this.#pose = createPoseStore({ echelleLibre: mode !== 'webxr', initiale: this.#pose.get() });
+      this.#pose = createPoseStore({ echelleLibre: false, initiale: this.#pose.get() });
       const vue = vuePiscine({
         config: this.#config,
         textes: this.#textes,
@@ -375,6 +375,13 @@ export class PiscineAr extends HTMLElement {
       this.classList.add('plein-ecran');
       this.#racine.append(vue.racine);
       this.#brancherGestes(vue);
+      // Échelle bloquée à 100 % dans tous les modes : « + » et « − » gardent leur case dans la grille 3×3 mais restent invisibles.
+      for (const b of [vue.plus, vue.moins]) {
+        if (!b) continue;
+        b.style.visibility = 'hidden';
+        b.disabled = true;
+        b.setAttribute('aria-hidden', 'true');
+      }
       this.#majCote();
       this.#majVignettes();
       this.#mesurer();
@@ -404,6 +411,11 @@ export class PiscineAr extends HTMLElement {
       if (mode === 'camera-gyro' && quickLookSupporte(document)) {
         this.#quicklook = createQuickLookAdaptateur({ calque: vue.lienRA, env: { document }, libelle: this.#textes.voirEnRA });
         if (modeleCourant) this.#quicklook.setModele(modeleCourant);
+        // V4a : Quick Look a besoin de la caméra et de la mémoire. Au clic (phase de capture, dans le geste, sans preventDefault),
+        // on coupe tout de façon synchrone puis on revient à l'accueil ; le navigateur suit ensuite le lien.
+        vue.lienRA.querySelector('a')?.addEventListener('click', () => {
+          if (this.#adaptateur === adaptateur) this.#retourAccueil();
+        }, { capture: true });
         this.#majPrincipal();
       }
       this.#renderer.shadowMap.enabled = mode === 'webxr'; // seul le plan d'ombre de la RA reçoit des ombres
@@ -436,13 +448,6 @@ export class PiscineAr extends HTMLElement {
       // et « Fixer au sol » (pose au centre) devient l'action principale.
       const capacites = adaptateur.capacites ?? { echelle: true, photo: true };
       masquer(this.#vue.figer, !capacites.photo);
-      // « + » et « − » gardent leur case dans la grille 3×3 : on les rend invisibles, pas absents.
-      for (const b of [this.#vue.plus, this.#vue.moins]) {
-        if (!b) continue;
-        b.style.visibility = capacites.echelle ? '' : 'hidden';
-        b.disabled = !capacites.echelle;
-        b.setAttribute('aria-hidden', capacites.echelle ? 'false' : 'true');
-      }
       masquer(this.#vue.recentrer, mode === 'webxr');
       masquer(this.#vue.fixer, mode !== 'webxr');
       this.#majPrincipal();

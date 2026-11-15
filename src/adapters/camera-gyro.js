@@ -3,9 +3,12 @@ import { PiscineArError } from '../core/erreurs.js';
 import { composePhoto } from '../core/capture.js';
 import { TEXTES } from '../ui/textes.js';
 import { orientationToQuaternion } from './orientation.js';
+import { champVertical, CHAMP_CAMERA_LONG } from '../core/champ.js';
 
 const BETA_FIXE = 75; // regard fixe si aucune orientation n'arrive (degrés)
 const DISTANCE_MAX = 40; // m : au-delà, le rayon rase l'horizon et le point n'a plus de sens
+const HAUTEUR_TELEPHONE = 1.4; // m : téléphone tenu en main
+const FOV_DEFAUT = 60; // degrés, sans dimensions vidéo
 const COULEUR_FOND = '#0f1419';
 const REFUS = ['NotAllowedError', 'SecurityError', 'PermissionDeniedError'];
 
@@ -39,10 +42,25 @@ export function createCameraGyroAdaptateur(deps) {
     camera.quaternion.set(q.x, q.y, q.z, q.w);
     if (hote.clientWidth > 0 && hote.clientHeight > 0) {
       const aspect = hote.clientWidth / hote.clientHeight;
+      let change = false;
       if (camera.aspect !== aspect) {
         camera.aspect = aspect;
-        camera.updateProjectionMatrix();
+        change = true;
       }
+      const fov = video
+        ? (champVertical({
+            videoL: video.videoWidth,
+            videoH: video.videoHeight,
+            ecranL: hote.clientWidth,
+            ecranH: hote.clientHeight,
+            champLong: CHAMP_CAMERA_LONG,
+          }) ?? FOV_DEFAUT)
+        : FOV_DEFAUT;
+      if (Math.abs(camera.fov - fov) > 1e-6) {
+        camera.fov = fov;
+        change = true;
+      }
+      if (change) camera.updateProjectionMatrix();
     }
     camera.updateMatrixWorld(true);
   };
@@ -81,6 +99,7 @@ export function createCameraGyroAdaptateur(deps) {
 
   function start() {
     if (demarrage) return demarrage;
+    camera.position.y = HAUTEUR_TELEPHONE;
 
     // Tout ce qui exige le geste de l'utilisateur part ici, avant le premier await.
     win.addEventListener('deviceorientation', surOrientation);
