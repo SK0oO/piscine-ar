@@ -1,0 +1,10 @@
+Projet : piscine-ar — dépôt /Users/alexandre/piscine-ar (lis CLAUDE.md, puis docs/plans/2026-11-12-coeur-et-adaptateurs.md **§13 en entier**, et §1, §7, §9, §10, §12 pour les noms existants)
+Étape : lot V5 « DA de Maxime » — mode ROUGE
+Objectif : écrire les tests du §13.3 pour qu'ils échouent aujourd'hui pour la bonne raison, et mettre à jour les seuls tests existants que la décision du §13 contredit (cote à 2 décimales, couleur ou texte de bouton), sans toucher au code hors tests/.
+Savoir-faire : /Users/alexandre/Documents/Alex Cerveau/DREAM/_outils/plugins/dream-team/skills/feature/SKILL.md (étape 3)
+Entrées : §13 du plan ; la maquette de Maxime en lecture seule (chemins au §13, pour comprendre la boîte 4:3 et les jetons) ; tests existants tests/unit/{config,format}.test.js, tests/browser/*.spec.js, helpers.js, pages/composant.html, fixtures/piscinier.json, fakes/.
+Tes fichiers (toi seul y écris) : tout tests/ (nouveaux : tests/unit/styles.test.js, tests/browser/da.spec.js, pages hôtes de test dans tests/browser/pages/ et fixtures dans tests/browser/fixtures/ si besoin).
+Règles : les noms viennent du §13 (`--pa-*`, classe `compact`, attribut `modele`, champ `forme`, `couleurs.water|deep|sand|onAccent`) ; un test = une propriété ; pour les couleurs calculées, compare des valeurs `rgb(...)` lues par `getComputedStyle` dans le Shadow DOM ; la fixture de config des tests reçoit le champ `forme` ; liste dans ton compte rendu chaque test existant modifié et pourquoi ; pas de dépendance ; un seul `npm test` et un seul `npm run test:browser` complets, puis `git checkout -- models/out/`. Ne commite pas.
+Déjà exclu : tout code hors tests/ ; attributs `couleur`, `longueur`, `largeur` (pas dans ce lot) ; Variant Launch.
+Fini quand : les nouveaux tests échouent pour la bonne raison (une ligne par fichier), les anciens non concernés passent ; résultats des deux suites collés.
+Retour : verdict `ROUGE CONFIRMÉ` ou `BLOQUÉ`, nouveaux tests par fichier, tests existants modifiés (et pourquoi), 3 puces max d'hypothèses.
