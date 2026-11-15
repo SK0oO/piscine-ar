@@ -1,0 +1,10 @@
+Projet : piscine-ar — dépôt /Users/alexandre/piscine-ar (lis CLAUDE.md, puis docs/plans/2026-11-12-coeur-et-adaptateurs.md **§12 en entier**, et §1, §7, §9, §10 pour les noms existants)
+Étape : lot V4 (V4a passage caméra → Quick Look, V4a bis USDZ léger, V4b taille juste en aperçu caméra) — mode ROUGE
+Objectif : écrire les tests du §12.3 pour qu'ils échouent aujourd'hui pour la bonne raison, sans toucher au code hors tests/.
+Savoir-faire : /Users/alexandre/Documents/Alex Cerveau/DREAM/_outils/plugins/dream-team/skills/feature/SKILL.md (étape 3)
+Entrées : §12 du plan (noms exacts : `src/core/champ.js` → `champVertical`, `CHAMP_CAMERA_LONG` ; `HAUTEUR_TELEPHONE` dans `src/adapters/camera-gyro.js`) ; tests existants tests/unit/camera-gyro.test.js, pose.test.js, generate.test.js et tests/unit/fakes/* ; tests/browser/quicklook.spec.js, telecommande.spec.js, helpers.js, fakes/media.js (la fausse caméra : ajoute-y si besoin un compteur d'arrêt des pistes, c'est un fichier de test).
+Tes fichiers (toi seul y écris) : tests/unit/champ.test.js (nouveau), tests/unit/camera-gyro.test.js, tests/unit/generate.test.js, tests/browser/quicklook.spec.js, tests/browser/telecommande.spec.js, tests/browser/fakes/*, tests/unit/fakes/*.
+Règles : le test existant « + et − changent l'échelle (×1,1 et ÷1,1) et la cote en mètres » devient « + et − sont invisibles, l'échelle reste 1 et la cote reste celle annoncée » (c'est une décision d'Alex : taille annoncée = taille affichée) ; tout autre test existant reste intact ; pas de nouvelle dépendance ; `--workers=1` déjà en place ; `npm test` relance `npm run generate` (long), un seul lancement complet ; restaure `git checkout -- models/out/` après.
+Déjà exclu : tout code hors tests/ ; figer/télécommande dans Quick Look (lot V4c, pas encore décidé).
+Fini quand : les nouveaux tests échouent pour la bonne raison (collée, une ligne par fichier), les anciens passent ; `npm test` et `npm run test:browser` lancés une fois chacun, résultats collés.
+Retour : verdict `ROUGE CONFIRMÉ` ou `BLOQUÉ`, nouveaux tests par fichier, raisons d'échec, 3 puces max d'hypothèses (dont les noms que tu as dû fixer toi-même).

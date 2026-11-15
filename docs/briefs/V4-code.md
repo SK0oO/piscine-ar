@@ -1,0 +1,10 @@
+Projet : piscine-ar — dépôt /Users/alexandre/piscine-ar (lis CLAUDE.md, puis docs/plans/2026-11-12-coeur-et-adaptateurs.md **§12 en entier**)
+Étape : lot V4 (V4a, V4a bis, V4b) — mode CODE
+Objectif : faire passer les tests du lot V4 sans modifier aucun test : coupure de la caméra et retour à l'accueil au clic sur le lien Quick Look de la vue caméra ; USDZ avec textures ≤ 512 px ; champ de vision calculé depuis la vidéo, téléphone à 1,4 m, échelle bloquée à 100 % dans tous les modes.
+Savoir-faire : /Users/alexandre/Documents/Alex Cerveau/DREAM/_outils/plugins/dream-team/skills/feature/SKILL.md (étape 4)
+Entrées : les tests du lot (`git diff ff5d9bf HEAD -- tests` après le commit des tests rouges) ; §12.1 à 12.3 ; src/ui/piscine-ar.js (#activer, #retourAccueil, #suite), src/adapters/camera-gyro.js, src/core/pose.js, models/generate/export.js.
+Tes fichiers (toi seul y écris) : src/core/champ.js (nouveau), src/adapters/camera-gyro.js, src/ui/piscine-ar.js, src/ui/vues.js si besoin, src/core/pose.js si besoin, models/generate/export.js (et index.js si besoin), models/out/* (régénérés).
+Règles : le clic sur le lien Quick Look ne doit ni être annulé ni retardé (pas de `preventDefault`, pas d'await avant la suite du geste) : couper les pistes et la boucle de façon synchrone, puis revenir à l'accueil ; `champVertical` pure, sans DOM ; ne recalcule `updateProjectionMatrix` que si le fov change ; aucune dépendance ajoutée ; aucun `innerHTML` ; textes en français ; les modèles régénérés font partie du lot (ne pas restaurer models/out avant le commit final, sauf les .usdz si les tests les ont régénérés sans changement de paramètres : ici ils changent, garde-les).
+Déjà exclu : figer/télécommande dans Quick Look, Variant Launch, lot Android.
+Fini quand : `npm test` → tout vert (nombre exact) ; `npm run test:browser` → tout vert ; `npm run build` passe ; tailles des 3 USDZ et 3 USDZ sol collées (< 1,5 Mo chacun). Commits en français, un sujet par commit, pas de push.
+Retour : verdict `FAIT` ou `BLOQUÉ`, tests n/n, tailles, fichiers touchés, 3 puces max.

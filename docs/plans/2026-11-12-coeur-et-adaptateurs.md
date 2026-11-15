@@ -374,3 +374,32 @@ Source : /Users/alexandre/Documents/Alex Cerveau/DREAM/1-Projets/Piscine-AR/rech
 - Quick Look et `repeat` : bug connu de l'ordre des opérations, d'où `quickLookCompatible: true` ; vérifier sur l'iPhone d'Alex que les carreaux font bien 5 cm.
 - `material.color` × texture : glTF le fait (`baseColorFactor`), USDZExporter le fait par `inputs:scale` du `UsdUVTexture` ; test : le `.usda` contient un `inputs:scale` non blanc pour la mosaïque.
 - Export dans Chromium : si le GPU logiciel manque, l'export n'a pas besoin de WebGL (encodage canvas 2D seulement) ; garder `--use-angle=swiftshader` pour les vignettes.
+
+## 12. Lot V4 : retours d'Alex du 15/11/2026 (test dehors sur iPhone)
+
+Retours : (1) commencer par « Aperçu caméra » puis passer à « Fixer au sol » (Quick Look) « bug trop » ; l'inverse marche, et on peut ensuite jongler. La RA « ne se charge pas toujours ». (2) Pas de bouton « figer » ni de télécommande dans la RA (Quick Look). (3) En aperçu caméra, les piscines ne font pas la taille annoncée (« 8 × 4 »).
+
+### 12.1 Causes trouvées dans le code
+- (1) Dans la vue caméra, le lien Quick Look s'ouvre **pendant que la caméra de la page tourne** (flux getUserMedia ouvert, boucle WebGL active, GLB texturé de 3 Mo en mémoire) : Quick Look a besoin de la caméra et de la mémoire, et télécharge en plus un USDZ de 3 Mo la première fois (lot M1 : il faisait 150 Ko avant). Quand on commence par Quick Look, l'USDZ est déjà en cache et la caméra de la page n'est pas ouverte. Non reproductible sans iPhone : hypothèse la plus probable, pas preuve.
+- (2) Limite d'Apple déjà établie (recherche du 14/11) : aucune interface de la page dans Quick Look. Piste en cours d'étude : boutons 3D dans le fichier USDZ (« behaviors » Apple). Hors de ce lot.
+- (3) Trois écarts cumulés : la caméra 3D a un champ vertical fixe de 60°, alors que la caméra arrière d'un téléphone en portrait voit environ 67° sur son grand côté, et la vidéo est recadrée en `object-fit: cover` (le champ affiché dépend du rapport vidéo/écran) ; la hauteur du téléphone est supposée à 1,5 m (tenu en main : plutôt 1,3–1,4 m) ; et l'échelle est libre (« + », « − », pincement), donc la piscine peut être agrandie ou réduite.
+
+### 12.2 Ce qui change
+- **V4a, passage vers Quick Look depuis la vue caméra** : au clic sur le lien Quick Look de la vue caméra (phase de capture, dans le geste, sans `preventDefault`), le composant coupe la caméra et la boucle de rendu (`adaptateur.stop()`, synchrone pour les pistes) et revient à l'accueil Quick Look (`#retourAccueil()`), puis le navigateur suit le lien. Au retour de Quick Look, le visiteur est sur l'accueil (deux boutons). Événement émis : aucun nouveau.
+- **V4a bis, USDZ plus léger** : `USDZExporter` avec `maxTextureSize: 512` (au lieu de 1024) ; cible : chaque USDZ < 1,5 Mo. Le GLB (Android, aperçu) garde 1024.
+- **V4b, taille juste en aperçu caméra** :
+  - `champVertical({ videoL, videoH, ecranL, ecranH, champLong })` (pure, `src/core/champ.js`) : renvoie le champ vertical affiché, en degrés, d'une vidéo dont le grand côté couvre `champLong` degrés, affichée en `cover` dans un écran `ecranL × ecranH`. Constante `CHAMP_CAMERA_LONG = 67` (objectif principal 26 mm équivalent, capteur 4:3).
+  - `camera-gyro` : à chaque image, si `video.videoWidth/videoHeight` sont connus, `camera.fov = champVertical(…)` (et `updateProjectionMatrix` seulement s'il change) ; sinon 60° (inchangé) ; mode « sans caméra » : 60°.
+  - Hauteur du téléphone : `HAUTEUR_TELEPHONE = 1.4` m, posée sur `camera.position.y` au démarrage de `camera-gyro` (la scène reste créée à 1,5 m, inchangée pour les autres modes).
+  - **Échelle bloquée à 100 % dans tous les modes** (recommandation n° 3 du rapport du 14/11) : `createPoseStore({ echelleLibre: false })` partout, touches « + » et « − » invisibles (case gardée dans la grille), pincement sans effet, cote toujours égale aux dimensions annoncées.
+
+### 12.3 Ce que les tests doivent prouver
+- `champ.test.js` : écran portrait 390 × 844, vidéo 1080 × 1920, champ long 67 → champ vertical ≈ 67° (vidéo moins large que haute que l'écran : hauteur pleine) ; vidéo 1920 × 1080 (paysage) sur le même écran → la vidéo est recadrée en largeur, champ vertical = champ court de la vidéo ≈ 41,0° ; écran paysage 844 × 390 + vidéo 1920 × 1080 → hauteur recadrée, champ vertical < champ court ; valeurs dans ]0 ; 180[ ; entrée nulle ou négative → `null`.
+- `camera-gyro.test.js` : avec une fausse vidéo 1080 × 1920 et un hôte 390 × 844, après une image `camera.fov` ≈ 67 (±0,5) ; sans dimensions vidéo → 60 ; `camera.position.y` = 1,4 après `start()` ; mode sans caméra → fov 60.
+- `pose` / composant : en camera-gyro, « + » et « − » invisibles et désactivés, la cote reste « 8,0 × 4,0 m » après un pincement simulé (test navigateur) ; le test existant « + et − changent l'échelle » est remplacé par « + et − sont invisibles, l'échelle reste 1 ».
+- `quicklook.spec.js` : en camera-gyro sur un navigateur qui supporte Quick Look, un clic sur le lien « Fixer au sol » arrête toutes les pistes vidéo (la fausse caméra voit `stop()` sur chaque piste), retire la vue caméra et réaffiche l'accueil Quick Look (les 3 vignettes et « Voir dans mon jardin ») ; le `href` du lien n'est pas modifié ; pas de `piscine-ar:error`.
+- `generate.test.js` : chaque `.usdz` < 1,5 Mo ; textures du `.usdz` ≤ 512 px (lire l'en-tête PNG/JPEG des fichiers `textures/` de l'archive) ; GLB inchangé (< 4 Mo, textures jusqu'à 1024).
+
+### 12.4 Hors lot
+- Figer et télécommande dans Quick Look : attend la recherche sur les « behaviors » USDZ (note recherche/usdz-behaviors-quicklook-2026-11-15.md du vault), puis un lot V4c si faisable.
+- Variant Launch : décision d'Alex.
