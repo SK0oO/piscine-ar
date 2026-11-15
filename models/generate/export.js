@@ -41,22 +41,50 @@ function groupesDansLeModele(groupe) {
   return groupe;
 }
 
-const scene = (groupe) => {
+// Cartes sans transparence utile (relief, occlusion/rugosité) : en USDZ on les encode en JPEG, bien plus léger qu'un PNG de bruit.
+const CARTES_EN_JPEG = new Set(['normalMap', 'roughnessMap', 'metalnessMap', 'aoMap']);
+
+// Les textures sont partagées entre les piscines : on note les changements pour les défaire après l'export USDZ.
+const mimeModifies = new Map();
+const rendrePng = () => {
+  for (const [texture, ancien] of mimeModifies) {
+    if (ancien === undefined) delete texture.userData.mimeType;
+    else texture.userData.mimeType = ancien;
+  }
+  mimeModifies.clear();
+};
+
+const scene = (groupe, { jpeg = false } = {}) => {
   const s = new Scene();
   s.add(groupe);
   s.traverse((o) => {
     if (!o.isMesh) return;
-    for (const m of [].concat(o.material)) for (const valeur of Object.values(m)) if (valeur && valeur.isTexture) versCanvas(valeur);
+    for (const m of [].concat(o.material)) {
+      for (const [cle, valeur] of Object.entries(m)) {
+        if (!valeur || !valeur.isTexture) continue;
+        versCanvas(valeur);
+        if (jpeg && CARTES_EN_JPEG.has(cle)) {
+          if (!mimeModifies.has(valeur)) mimeModifies.set(valeur, valeur.userData.mimeType);
+          valeur.userData.mimeType = 'image/jpeg';
+        }
+      }
+    }
   });
   return s;
 };
 
-const OPTIONS_USDZ = { quickLookCompatible: true, maxTextureSize: 1024 };
+const OPTIONS_USDZ = { quickLookCompatible: true, maxTextureSize: 512 };
 
 window.exporter = async (params, { eau = params.eauParDefaut } = {}) => {
   const glb = await new GLTFExporter().parseAsync(scene(buildPool(params, { eau })), { binary: true, maxTextureSize: 1024 });
-  const usdz = await new USDZExporter().parseAsync(scene(groupesDansLeModele(buildPool(params, { eau }))), OPTIONS_USDZ);
-  const usdzSol = await new USDZExporter().parseAsync(scene(groupesDansLeModele(buildPool(params, { eau, dalle: true }))), OPTIONS_USDZ);
+  let usdz;
+  let usdzSol;
+  try {
+    usdz = await new USDZExporter().parseAsync(scene(groupesDansLeModele(buildPool(params, { eau })), { jpeg: true }), OPTIONS_USDZ);
+    usdzSol = await new USDZExporter().parseAsync(scene(groupesDansLeModele(buildPool(params, { eau, dalle: true })), { jpeg: true }), OPTIONS_USDZ);
+  } finally {
+    rendrePng();
+  }
   return { glb: await base64(glb), usdz: await base64(usdz), usdzSol: await base64(usdzSol) };
 };
 window.__pret = true;
