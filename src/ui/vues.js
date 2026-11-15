@@ -25,16 +25,25 @@ export function vueMessage(texte) {
   return el('div', { classe: 'ecran' }, el('p', { texte }));
 }
 
+// Grande vignette du modèle courant : carte 4:3 en plein écran, fond couvrant en accueil compact (styles.js).
+function apercu(modele) {
+  const img = el('img', { attrs: { alt: '' } });
+  if (modele) img.src = modele.vignette;
+  return { figure: el('div', { classe: 'apercu', attrs: { 'aria-hidden': 'true' } }, img), img };
+}
+
 // Écran d'explication avant toute demande ; avec `erreur`, c'est l'écran « Réessayer ».
-export function vueExplication({ textes, config, erreur, reessayer, sansCamera, surActiver, surSansCamera }) {
+export function vueExplication({ textes, config, modele, erreur, reessayer, sansCamera, surActiver, surSansCamera }) {
   const ecran = el('div', { classe: 'ecran', role: 'explication' });
+  const { figure, img } = apercu(modele);
   if (config) ecran.append(el('p', { classe: 'marque', texte: config.pisciniste.nom }));
   ecran.append(el('h2', { texte: textes.titre }));
   if (erreur) ecran.append(el('p', { classe: 'erreur', texte: erreur, attrs: { role: 'alert' } }));
   else ecran.append(el('p', { texte: textes.explication }));
+  if (config) ecran.append(figure); // après le texte dans le flux ; en compact, il passe en fond
   ecran.append(bouton(reessayer ? textes.reessayer : textes.autoriser, 'btn principal', surActiver));
   if (sansCamera) ecran.append(bouton(textes.voirSansCamera, 'lien', surSansCamera));
-  return ecran;
+  return { ecran, apercu: img };
 }
 
 // Vignettes de sélection des modèles (écran de la piscine et accueil Quick Look).
@@ -52,16 +61,17 @@ function vignettesModeles(config, surVignette) {
 }
 
 // Accueil iPhone : vignettes, lien Quick Look (construit par le composant dans `lienRA`) et lien secondaire « Aperçu caméra ».
-export function vueQuickLook({ textes, config, surVignette, surCamera }) {
+export function vueQuickLook({ textes, config, modele, surVignette, surCamera }) {
   const ecran = el('div', { classe: 'ecran', role: 'explication-quicklook' });
   ecran.append(el('p', { classe: 'marque', texte: config.pisciniste.nom }));
   ecran.append(el('h2', { texte: textes.titre }));
   ecran.append(el('p', { texte: textes.explicationQuickLook }));
+  const { figure, img } = apercu(modele);
   const { modeles, vignettes } = vignettesModeles(config, surVignette);
   protegerXr(modeles);
   const lienRA = el('div', { classe: 'lien-ra', role: 'lien-ra' });
-  ecran.append(modeles, lienRA, bouton(textes.apercuCamera, 'lien', surCamera));
-  return { ecran, vignettes, lienRA };
+  ecran.append(figure, modeles, lienRA, bouton(textes.apercuCamera, 'lien', surCamera));
+  return { ecran, vignettes, lienRA, apercu: img };
 }
 
 // Télécommande : pavé 3 × 3 (⟲ ↑ ⟳ / ← · → / − ↓ +). Appui long = répétition, gérée par `surTelecommande(action, actif)`.
@@ -122,6 +132,7 @@ export function vuePiscine({ config, textes, canvas, avecVideo, surVignette, sur
   const { modeles, vignettes } = vignettesModeles(config, surVignette);
   const telecommande = vueTelecommande(textes, surTelecommande);
   const figer = bouton(textes.figer, 'btn principal', surFiger); // « Photo » ; le composant l'adoucit si une autre action est principale
+  figer.prepend(el('i', { classe: 'obturateur', attrs: { 'aria-hidden': 'true' } }));
   const fixer = bouton(textes.fixerSol, 'btn', surFixer); // « Fixer au sol » (RA Android) : pose au centre
   fixer.hidden = true;
   const recentrer = bouton('↻', 'btn rond', surRecentrer, { 'aria-label': textes.recentrer });

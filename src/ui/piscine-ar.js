@@ -23,6 +23,22 @@ const PAS_DEPLACEMENT_M = 0.25;
 const PAS_ROTATION_RAD = (15 * Math.PI) / 180;
 const PAS_ECHELLE = 1.1;
 const REPETITION_MS = 120;
+const COMPACT_MAX_PX = 420; // hauteur de l'hôte sous laquelle l'accueil passe en compact (boîte 4:3 de la page)
+
+// Couleurs de la config du pisciniste → variables internes (priorité : config > page > repli lagon).
+const VARIABLES_COULEURS = Object.freeze({ accent: '--pa-accent', water: '--pa-water', deep: '--pa-deep', sand: '--pa-sand', onAccent: '--pa-on-accent' });
+
+// Texte lisible sur l'accent de la config quand `onAccent` manque : le plus contrasté du foncé de la palette et du blanc.
+const FONCE_SUR_ACCENT = '#1B1600';
+function luminance(hex) {
+  const lin = (v) => { const x = v / 255; return x <= 0.03928 ? x / 12.92 : ((x + 0.055) / 1.055) ** 2.4; };
+  const n = parseInt(hex.slice(1), 16);
+  return 0.2126 * lin((n >> 16) & 255) + 0.7152 * lin((n >> 8) & 255) + 0.0722 * lin(n & 255);
+}
+function texteSurAccent(hex) {
+  const l = luminance(hex);
+  return (l + 0.05) / (luminance(FONCE_SUR_ACCENT) + 0.05) >= 1.05 / (l + 0.05) ? FONCE_SUR_ACCENT : '#FFFFFF';
+}
 
 // GET de la config, sans cookie, avec délai et plafond de taille avant JSON.parse.
 async function lireConfig(url) {
@@ -58,7 +74,7 @@ const masquer = (el, oui) => {
 };
 
 export class PiscineAr extends HTMLElement {
-  static observedAttributes = ['config'];
+  static observedAttributes = ['config', 'modele'];
 
   #racine;
   #vie = 0; // change à chaque déconnexion : écarte les résultats asynchrones périmés
@@ -83,6 +99,7 @@ export class PiscineAr extends HTMLElement {
   #gele = false;
   #urlPhoto = null;
   #repetition = null; // minuteur d'appui long de la télécommande
+  #apercu = null; // grande vignette de l'accueil (img), suit le modèle courant
 
   constructor() {
     super();
@@ -112,6 +129,10 @@ export class PiscineAr extends HTMLElement {
   }
 
   attributeChangedCallback(nom, ancien, nouveau) {
+    if (nom === 'modele') {
+      if (ancien !== nouveau) this.#appliquerAttributModele();
+      return;
+    }
     if (this.isConnected && ancien !== null && ancien !== nouveau) {
       this.#liberer();
       this.#charger();
@@ -133,6 +154,7 @@ export class PiscineAr extends HTMLElement {
     this.#adaptateur = null;
     this.#vue = null;
     this.#accueil = null;
+    this.#apercu = null;
     this.#ecran = null;
     this.#occupe = false;
     this.#gele = false;
@@ -151,13 +173,17 @@ export class PiscineAr extends HTMLElement {
     this.#renderer?.forceContextLoss();
     this.#renderer = null;
     this.#racine.replaceChildren();
-    this.#racine.style.removeProperty('--accent');
+    for (const nom of Object.values(VARIABLES_COULEURS)) this.#racine.style.removeProperty(nom);
     this.#initialiser();
   }
 
   async #charger() {
     const vie = this.#vie;
     this.#montrerEcran(vueMessage(this.#textes.chargement));
+    // Taille de l'hôte suivie dès l'accueil : classe `compact` dans la boîte 4:3 de la page (plan §13.2).
+    this.#observeur ??= new ResizeObserver(() => this.#mesurer());
+    this.#observeur.observe(this);
+    this.#mesurer();
     try {
       const attribut = this.getAttribute('config');
       if (!attribut) throw new PiscineArError('config-invalide', 'attribut config manquant');
@@ -169,7 +195,7 @@ export class PiscineAr extends HTMLElement {
         originesAutorisees: [location.origin, new URL(import.meta.url).origin],
       });
       this.#textes = { ...TEXTES, ...this.#config.textes };
-      if (this.#config.couleurs.accent) this.#racine.style.setProperty('--accent', this.#config.couleurs.accent);
+      this.#appliquerCouleurs(this.#config.couleurs);
       this.#lancerChargementModele();
       this.#choix = await Promise.race([
         choisirMode({ navigator, window, document }),
@@ -182,6 +208,37 @@ export class PiscineAr extends HTMLElement {
       this.#signaler(e, 'config-invalide');
       this.#montrerEcran(vueMessage(this.#textes.erreurConfig));
     }
+  }
+
+  #appliquerCouleurs(couleurs) {
+    for (const [cle, nom] of Object.entries(VARIABLES_COULEURS)) {
+      if (couleurs[cle]) this.#racine.style.setProperty(nom, couleurs[cle]);
+    }
+    if (couleurs.accent && !couleurs.onAccent) this.#racine.style.setProperty('--pa-on-accent', texteSurAccent(couleurs.accent));
+  }
+
+  // Attribut `modele` (contrat de la maquette) : id d'un modèle, ou forme (`rectangle`, `ovale`, `haricot`). Inconnu : null.
+  #modeleDemande() {
+    const valeur = this.getAttribute('modele');
+    if (!valeur || !this.#config) return null;
+    const modeles = this.#config.modeles;
+    return modeles.find((m) => m.id === valeur) ?? modeles.find((m) => m.forme === valeur) ?? null;
+  }
+
+  // Changement de l'attribut après le chargement : comme un clic sur la vignette (model-changed émis).
+  #appliquerAttributModele() {
+    if (!this.#config || !this.#modelePret) return; // avant : lu par #charger
+    const modele = this.#modeleDemande();
+    if (!modele) return;
+    this.#accueil?.quicklook.setModele(modele);
+    const choix = this.#choisirModele(modele);
+    if (!this.#switcher.courant()) this.#modelePret = choix.then(() => this.#switcher.courant());
+  }
+
+  // Modèle à montrer sur l'accueil : le courant, sinon celui demandé ou par défaut.
+  #modeleAffiche() {
+    const id = this.#switcher.courant()?.id ?? this.#modeleDemande()?.id ?? this.#config.modeleParDefaut;
+    return this.#config.modeles.find((m) => m.id === id);
   }
 
   // --- événements et erreurs ----------------------------------------------
@@ -210,6 +267,7 @@ export class PiscineAr extends HTMLElement {
     const vue = vueQuickLook({
       textes: this.#textes,
       config: this.#config,
+      modele: this.#modeleAffiche(),
       surVignette: (m) => {
         this.#accueil?.quicklook.setModele(m);
         this.#choisirModele(m);
@@ -218,10 +276,10 @@ export class PiscineAr extends HTMLElement {
     });
     const quicklook = createQuickLookAdaptateur({ calque: vue.lienRA, env: { document }, libelle: this.#textes.voirDansJardin, action: this.#textes.changerModele });
     vue.lienRA.querySelector('a')?.classList.add('principal');
-    const courant = this.#switcher.courant();
-    const initial = this.#config.modeles.find((m) => m.id === (courant?.id ?? this.#config.modeleParDefaut));
+    const initial = this.#modeleAffiche();
     if (initial) quicklook.setModele(initial);
     this.#montrerEcran(vue.ecran);
+    this.#apercu = vue.apercu;
     this.#accueil = { vignettes: vue.vignettes, quicklook };
     this.#majVignettes();
     this.#modelePret.then(() => {
@@ -239,15 +297,18 @@ export class PiscineAr extends HTMLElement {
       return;
     }
     const camera = this.#choix?.mode !== 'sans-camera';
-    this.#montrerEcran(vueExplication({
+    const vue = vueExplication({
       textes: this.#textes,
       config: this.#config,
+      modele: this.#config && this.#modeleAffiche(),
       erreur,
       reessayer: Boolean(erreur),
       sansCamera: camera,
       surActiver: () => this.#activer(),
       surSansCamera: () => this.#activer('sans-camera'),
-    }));
+    });
+    this.#montrerEcran(vue.ecran);
+    this.#apercu = vue.apercu;
   }
 
   #retirerVue() {
@@ -261,6 +322,7 @@ export class PiscineAr extends HTMLElement {
     this.#vue?.racine.remove();
     this.#vue = null;
     this.#gele = false;
+    this.#mesurer();
   }
 
   #retourAccueil() {
@@ -284,10 +346,16 @@ export class PiscineAr extends HTMLElement {
 
   // --- modèles ------------------------------------------------------------
 
+  // Premier modèle : celui de l'attribut `modele` s'il est connu (model-changed émis s'il diffère du défaut), sinon le défaut.
   #lancerChargementModele() {
-    const defaut = this.#config.modeles.find((m) => m.id === this.#config.modeleParDefaut);
+    const demande = this.#modeleDemande();
+    const defaut = demande ?? this.#config.modeles.find((m) => m.id === this.#config.modeleParDefaut);
+    const vie = this.#vie;
     this.#modeleEchec = false;
-    this.#modelePret = this.#selectionner(defaut).catch(() => {
+    this.#modelePret = this.#selectionner(defaut).then((res) => {
+      if (res && vie === this.#vie && res.id !== this.#config.modeleParDefaut) this.#emettre('model-changed', { modele: res.id, pose: this.#pose.get() });
+      return res;
+    }).catch(() => {
       this.#modeleEchec = true;
       return null;
     });
@@ -325,9 +393,11 @@ export class PiscineAr extends HTMLElement {
   #majVignettes() {
     const actif = this.#switcher.courant()?.id;
     for (const [id, b] of this.#vue?.vignettes ?? this.#accueil?.vignettes ?? []) b.setAttribute('aria-pressed', String(id === actif));
+    const modele = actif && this.#config?.modeles.find((m) => m.id === actif);
+    if (this.#apercu && modele && this.#apercu.getAttribute('src') !== modele.vignette) this.#apercu.src = modele.vignette;
   }
 
-  // Une seule action principale (bouton blanc) : « Fixer au sol » (lien Quick Look ou pose RA), sinon « Photo ».
+  // Une seule action principale (pilule --pa-accent) : « Fixer au sol » (lien Quick Look ou pose RA), sinon « Photo ».
   #majPrincipal() {
     const vue = this.#vue;
     if (!vue) return;
@@ -492,6 +562,7 @@ export class PiscineAr extends HTMLElement {
   #mesurer() {
     const l = this.clientWidth;
     const h = this.clientHeight;
+    this.#racine.classList.toggle('compact', h > 0 && h < COMPACT_MAX_PX && !this.classList.contains('plein-ecran'));
     if (this.#renderer && l > 0 && h > 0) this.#renderer.setSize(l, h, false);
   }
 

@@ -10,6 +10,9 @@ export const CLES_TEXTES = Object.freeze([
 
 const ID = /^[a-z0-9-]+$/;
 const COULEUR = /^#[0-9a-fA-F]{6}$/;
+// Couleurs de marque facultatives (plan §13.2) : mêmes noms que les jetons de la page de Maxime.
+const CLES_COULEURS = Object.freeze(['accent', 'water', 'deep', 'sand', 'onAccent']);
+const FORMES = Object.freeze(['rectangle', 'ovale', 'haricot']);
 const MAX_TEXTE = 200;
 
 const invalide = (champ, raison) => new PiscineArError('config-invalide', `${champ} : ${raison}`);
@@ -48,11 +51,11 @@ export function parseConfig(json, { configUrl, originesAutorisees }) {
   const couleurs = {};
   if (json.couleurs !== undefined) {
     if (!objet(json.couleurs)) throw invalide('couleurs', 'objet attendu');
-    if (json.couleurs.accent !== undefined) {
-      if (typeof json.couleurs.accent !== 'string' || !COULEUR.test(json.couleurs.accent)) {
-        throw invalide('couleurs.accent', 'couleur #rrggbb attendue');
-      }
-      couleurs.accent = json.couleurs.accent;
+    for (const cle of CLES_COULEURS) {
+      const v = json.couleurs[cle];
+      if (v === undefined) continue;
+      if (typeof v !== 'string' || !COULEUR.test(v)) throw invalide(`couleurs.${cle}`, 'couleur #rrggbb attendue');
+      couleurs[cle] = v;
     }
   }
 
@@ -79,6 +82,10 @@ export function parseConfig(json, { configUrl, originesAutorisees }) {
       vignette: url(m.vignette, `${p}.vignette`, ctx),
     };
     if (m.usdz != null) sortie.usdz = url(m.usdz, `${p}.usdz`, ctx);
+    if (m.forme !== undefined) {
+      if (!FORMES.includes(m.forme)) throw invalide(`${p}.forme`, 'rectangle, ovale ou haricot attendu');
+      sortie.forme = m.forme;
+    }
     return sortie;
   });
 
