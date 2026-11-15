@@ -27,6 +27,7 @@ export function createCameraGyroAdaptateur(deps) {
   let orientation = null; // { alpha, beta, gamma }
   let alphaRef = null;
   let boutonLancer = null;
+  let hauteurAvant = null;
 
   const surOrientation = (e) => {
     if (e.alpha == null || e.beta == null) return;
@@ -99,7 +100,10 @@ export function createCameraGyroAdaptateur(deps) {
 
   function start() {
     if (demarrage) return demarrage;
-    camera.position.y = HAUTEUR_TELEPHONE;
+    if (video) {
+      hauteurAvant = camera.position.y;
+      camera.position.y = HAUTEUR_TELEPHONE; // aperçu caméra seulement ; « sans caméra » garde la hauteur de la scène
+    }
 
     // Tout ce qui exige le geste de l'utilisateur part ici, avant le premier await.
     win.addEventListener('deviceorientation', surOrientation);
@@ -166,6 +170,7 @@ export function createCameraGyroAdaptateur(deps) {
     boutonLancer?.remove();
     boutonLancer = null;
     abonnes.clear();
+    if (hauteurAvant !== null) camera.position.y = hauteurAvant;
   }
 
   function place(x, y) {

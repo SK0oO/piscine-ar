@@ -412,9 +412,14 @@ export class PiscineAr extends HTMLElement {
         this.#quicklook = createQuickLookAdaptateur({ calque: vue.lienRA, env: { document }, libelle: this.#textes.voirEnRA });
         if (modeleCourant) this.#quicklook.setModele(modeleCourant);
         // V4a : Quick Look a besoin de la caméra et de la mémoire. Au clic (phase de capture, dans le geste, sans preventDefault),
-        // on coupe tout de façon synchrone puis on revient à l'accueil ; le navigateur suit ensuite le lien.
+        // on coupe caméra et rendu tout de suite ; la vue n'est retirée qu'après le clic, pour que le lien
+        // soit encore dans la page quand le navigateur l'ouvre.
         vue.lienRA.querySelector('a')?.addEventListener('click', () => {
-          if (this.#adaptateur === adaptateur) this.#retourAccueil();
+          if (this.#adaptateur !== adaptateur) return;
+          adaptateur.stop();
+          setTimeout(() => {
+            if (this.#adaptateur === adaptateur) this.#retourAccueil();
+          }, 0);
         }, { capture: true });
         this.#majPrincipal();
       }
