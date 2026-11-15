@@ -4,12 +4,10 @@
     "nom": "Piscines Dupont",
     "logo": null
   },
-  "couleurs": {
-    "accent": "#1f6f9f"
-  },
   "modeles": [
     {
       "id": "rectangulaire-8x4",
+      "forme": "rectangle",
       "nom": "Rectangle 8 × 4",
       "glb": "../../models/out/rectangulaire-8x4.glb",
       "usdz": "../../models/out/rectangulaire-8x4-sol.usdz",
@@ -17,6 +15,7 @@
     },
     {
       "id": "haricot-7x3-5",
+      "forme": "haricot",
       "nom": "Haricot 7 × 3,5",
       "glb": "../../models/out/haricot-7x3-5.glb",
       "usdz": "../../models/out/haricot-7x3-5-sol.usdz",
@@ -24,6 +23,7 @@
     },
     {
       "id": "ovale-5x3",
+      "forme": "ovale",
       "nom": "Ovale 5 × 3",
       "glb": "../../models/out/ovale-5x3.glb",
       "usdz": "../../models/out/ovale-5x3-sol.usdz",

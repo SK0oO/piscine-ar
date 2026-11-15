@@ -53,7 +53,7 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     emptyOutDir: false, // dist/piscine-ar.js vient de la première construction
-    rollupOptions: { input: { demo: 'demo/index.html', preview: 'demo/preview.html' } },
+    rollupOptions: { input: { demo: 'demo/index.html', integree: 'demo/integree.html', preview: 'demo/preview.html' } },
   },
   server: { host: true, https },
   preview: { host: true, https, port: 4443 },
