@@ -53,7 +53,7 @@ async function pincer(page, de, a) {
 
 test('pincer ne change pas l\'échelle : scale reste 1 et la cote reste celle annoncée', async ({ page }) => {
   const depart = await cote(page);
-  expect(depart).toBe('8,0 × 4,0 m');
+  expect(depart).toBe('8,00 × 4,00 m');
   expect((await pose(page)).scale).toBe(1);
   await pincer(page, 100, 200);
   const c = await centre(page);

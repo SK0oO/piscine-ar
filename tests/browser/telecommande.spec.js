@@ -57,7 +57,7 @@ test.describe('télécommande', () => {
 
   test('+ et − sont invisibles, l\'échelle reste 1 et la cote reste celle annoncée', async ({ page }) => {
     const c0 = await cote(page);
-    expect(c0).toBe('8,0 × 4,0 m');
+    expect(c0).toBe('8,00 × 4,00 m');
     expect((await pose(page)).scale).toBe(1);
     for (const action of ['plus', 'moins']) {
       const t = touche(page, action);

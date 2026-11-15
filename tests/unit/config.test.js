@@ -97,4 +97,36 @@ describe('parseConfig', () => {
       refuse(j, 'accent');
     }
   });
+  // Lot V5 (plan §13.2) : palette complète et forme facultative.
+  it.each(['water', 'deep', 'sand', 'onAccent'])('couleurs.%s est acceptée en #rrggbb', (cle) => {
+    const j = valide();
+    j.couleurs[cle] = '#19b5c8';
+    expect(parseConfig(j, OPTS).couleurs[cle]).toBe('#19b5c8');
+  });
+
+  it.each(['water', 'deep', 'sand', 'onAccent'])('couleurs.%s est refusée si ce n\'est pas #rrggbb', (cle) => {
+    for (const v of ['bleu', '#12345', '#gggggg', 'red', 42]) {
+      const j = valide();
+      j.couleurs[cle] = v;
+      refuse(j, cle);
+    }
+  });
+
+  it.each(['rectangle', 'ovale', 'haricot'])('modeles[i].forme « %s » est acceptée', (forme) => {
+    const j = valide();
+    j.modeles[0].forme = forme;
+    expect(parseConfig(j, OPTS).modeles[0].forme).toBe(forme);
+  });
+
+  it('modeles[i].forme est facultative', () => {
+    expect(() => parseConfig(valide(), OPTS)).not.toThrow();
+  });
+
+  it('modeles[i].forme inconnue est refusée', () => {
+    for (const v of ['carre', 'Rectangle', '', 3]) {
+      const j = valide();
+      j.modeles[1].forme = v;
+      refuse(j, 'forme');
+    }
+  });
 });

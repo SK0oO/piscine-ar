@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Page hôte DA — piscine-ar (lot V5)</title>
+<!-- Simule la page de Maxime. Paramètres d'URL : accent, deep (jetons posés sur :root), w, h (px, taille de l'hôte),
+     modele (attribut), config (chemin de la config, défaut : sans couleurs). Aucune police n'est chargée. -->
+<style>html, body { margin: 0; height: 100%; }</style>
+<script>
+  window.__evts = [];
+  window.__blobs = [];
+  for (const type of ['ready', 'model-changed', 'photo', 'error']) {
+    document.addEventListener('piscine-ar:' + type, (e) => {
+      const d = e.detail || {};
+      const copie = { type, ...d };
+      if (d.blob) { window.__blobs.push(d.blob); copie.blob = { type: d.blob.type, size: d.blob.size }; }
+      window.__evts.push(copie);
+    });
+  }
+  const q = new URLSearchParams(location.search);
+  if (q.get('accent')) document.documentElement.style.setProperty('--accent', q.get('accent'));
+  if (q.get('deep')) document.documentElement.style.setProperty('--deep', q.get('deep'));
+  document.addEventListener('DOMContentLoaded', () => {
+    const h = document.createElement('piscine-ar');
+    h.setAttribute('config', q.get('config') || '../fixtures/piscinier-sans-couleurs.json');
+    if (q.get('modele')) h.setAttribute('modele', q.get('modele'));
+    h.style.display = 'block';
+    h.style.width = q.get('w') ? q.get('w') + 'px' : '100%';
+    h.style.height = q.get('h') ? q.get('h') + 'px' : '100vh';
+    document.body.append(h);
+  });
+</script>
+</head>
+<body>
+<script type="module">
+  const chemin = '/src/index.js';
+  import(/* @vite-ignore */ chemin).then(
+    () => { window.__chargement = 'ok'; },
+    (e) => { window.__chargement = 'erreur : ' + (e && e.message); },
+  );
+</script>
+</body>
+</html>
