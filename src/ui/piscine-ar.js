@@ -85,6 +85,7 @@ export class PiscineAr extends HTMLElement {
   #textes = TEXTES;
   #choix = null;
   #modelePret = null;
+  #idEnCharge = null; // modèle dont le premier chargement est en cours (attribut `modele` pendant ce chargement)
   #modeleEchec = false;
   #dimensions = null;
   #renderer = null;
@@ -149,6 +150,7 @@ export class PiscineAr extends HTMLElement {
     this.#textes = TEXTES;
     this.#choix = null;
     this.#modelePret = null;
+    this.#idEnCharge = null;
     this.#modeleEchec = false;
     this.#dimensions = null;
     this.#adaptateur = null;
@@ -231,8 +233,23 @@ export class PiscineAr extends HTMLElement {
     const modele = this.#modeleDemande();
     if (!modele) return;
     this.#accueil?.quicklook.setModele(modele);
+    const courant = this.#switcher.courant();
+    if (courant ? courant.id === modele.id : this.#idEnCharge === modele.id) return; // déjà affiché ou déjà en chargement
     const choix = this.#choisirModele(modele);
-    if (!this.#switcher.courant()) this.#modelePret = choix.then(() => this.#switcher.courant());
+    if (!courant) {
+      this.#idEnCharge = modele.id;
+      this.#modelePret = choix.then(() => this.#switcher.courant());
+    }
+  }
+
+  // Attend le modèle prêt, même si l'attribut `modele` a remplacé le chargement en cours entre-temps.
+  async #attendreModele() {
+    let attendu;
+    do {
+      attendu = this.#modelePret;
+      await attendu;
+    } while (attendu !== this.#modelePret);
+    return this.#switcher.courant();
   }
 
   // Modèle à montrer sur l'accueil : le courant, sinon celui demandé ou par défaut.
@@ -282,8 +299,7 @@ export class PiscineAr extends HTMLElement {
     this.#apercu = vue.apercu;
     this.#accueil = { vignettes: vue.vignettes, quicklook };
     this.#majVignettes();
-    this.#modelePret.then(() => {
-      const modele = this.#switcher.courant();
+    this.#attendreModele().then((modele) => {
       if (vie === this.#vie && this.#ecran === vue.ecran && modele) {
         this.#emettre('ready', { mode: 'quicklook', modele: modele.id, quicklook: true });
       }
@@ -352,11 +368,13 @@ export class PiscineAr extends HTMLElement {
     const defaut = demande ?? this.#config.modeles.find((m) => m.id === this.#config.modeleParDefaut);
     const vie = this.#vie;
     this.#modeleEchec = false;
+    this.#idEnCharge = defaut?.id ?? null;
     this.#modelePret = this.#selectionner(defaut).then((res) => {
       if (res && vie === this.#vie && res.id !== this.#config.modeleParDefaut) this.#emettre('model-changed', { modele: res.id, pose: this.#pose.get() });
       return res;
     }).catch(() => {
       this.#modeleEchec = true;
+      this.#idEnCharge = null;
       return null;
     });
   }
@@ -506,7 +524,7 @@ export class PiscineAr extends HTMLElement {
     const demarrage = adaptateur.start(); // la partie synchrone (permissions, caméra, lecture) part ici, dans le geste
     try {
       await demarrage;
-      await this.#modelePret;
+      await this.#attendreModele();
       if (vie !== this.#vie) return;
       const modele = this.#switcher.courant();
       if (!modele) throw Object.assign(new PiscineArError('modele-introuvable', 'modèle introuvable'), { dejaSignale: true });

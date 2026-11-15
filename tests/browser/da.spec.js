@@ -202,6 +202,31 @@ test.describe('attribut modele', () => {
     await expect.poll(() => modeles(page), { timeout: 5_000 }).toContain('ovale-5x3');
   });
 
+  // Régressions de la relecture V5 : attribut changé pendant le premier chargement (GLB ralenti), accueil Quick Look.
+  const ralentirGlb = (page) => page.route('**/*.glb', async (r) => { await new Promise((ok) => setTimeout(ok, 1500)); await r.continue(); });
+
+  test('modele changé pendant le premier chargement : ready émis avec ce modèle, un seul model-changed', async ({ page }) => {
+    await ralentirGlb(page);
+    await ouvrirDA(page, {}, { quickLook: true });
+    await principal(page).waitFor();
+    expect(await evenements(page, 'ready')).toHaveLength(0); // le GLB est encore en route
+    await page.evaluate(() => document.querySelector('piscine-ar').setAttribute('modele', 'ovale'));
+    await expect.poll(async () => (await evenements(page, 'ready')).map((e) => e.modele), { timeout: 8_000 }).toEqual(['ovale-5x3']);
+    expect(await modeles(page)).toEqual(['ovale-5x3']);
+  });
+
+  test('modele = celui déjà en chargement : aucun second chargement, aucun model-changed', async ({ page }) => {
+    await ralentirGlb(page);
+    const glb = [];
+    page.on('request', (q) => { if (q.url().endsWith('.glb')) glb.push(q.url()); });
+    await ouvrirDA(page, {}, { quickLook: true });
+    await principal(page).waitFor();
+    await page.evaluate(() => document.querySelector('piscine-ar').setAttribute('modele', 'rectangle'));
+    await expect.poll(async () => (await evenements(page, 'ready')).length, { timeout: 8_000 }).toBe(1);
+    expect(await modeles(page)).toEqual([]);
+    expect(glb.filter((u) => u.includes('rectangulaire'))).toHaveLength(1);
+  });
+
   test('modele="inconnu" est ignoré : aucun model-changed', async ({ page }) => {
     await ouvrirDA(page);
     await principal(page).waitFor();
