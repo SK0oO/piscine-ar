@@ -23,7 +23,9 @@ export function creerElementFactice() {
   return el;
 }
 
-export function creerDepsCameraGyro({ permission = 'granted', permissionAbsente = false, getUserMedia, play } = {}) {
+// V4 : `dimsVideo` = { largeur, hauteur } de la fausse vidéo (0 = inconnues, comme avant loadedmetadata) ;
+// `sansVideo: true` = mode « sans caméra » (deps.video = null). Le fake renvoie aussi `stage`.
+export function creerDepsCameraGyro({ permission = 'granted', permissionAbsente = false, getUserMedia, play, dimsVideo, sansVideo = false } = {}) {
   const journal = [];
   const pistes = [{ stoppee: false, stop() { this.stoppee = true; } }];
   const flux = { getTracks: () => pistes };
@@ -59,8 +61,8 @@ export function creerDepsCameraGyro({ permission = 'granted', permissionAbsente 
 
   const video = {
     srcObject: null,
-    videoWidth: 1280,
-    videoHeight: 720,
+    videoWidth: dimsVideo ? dimsVideo.largeur : 1280,
+    videoHeight: dimsVideo ? dimsVideo.hauteur : 720,
     ...creerElementFactice(),
     play: () => {
       journal.push({ nom: 'play' });
@@ -88,9 +90,9 @@ export function creerDepsCameraGyro({ permission = 'granted', permissionAbsente 
   const surFin = [];
 
   const deps = {
-    renderer, stage, pose, hote, calque: creerElementFactice(), video,
+    renderer, stage, pose, hote, calque: creerElementFactice(), video: sansVideo ? null : video,
     env: { navigator: nav, window: win, document },
     rendre: () => {}, surFin: (raison) => surFin.push(raison),
   };
-  return { deps, journal, pistes, flux, win, renderer, video, pose, surFin };
+  return { deps, journal, pistes, flux, win, renderer, video, pose, surFin, stage };
 }

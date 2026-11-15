@@ -55,15 +55,21 @@ test.describe('télécommande', () => {
     expect((await pose(page)).rotationY - r1).toBeCloseTo(-Math.PI / 6, 2);
   });
 
-  test('+ et − changent l\'échelle (×1,1 et ÷1,1) et la cote en mètres', async ({ page }) => {
+  test('+ et − sont invisibles, l\'échelle reste 1 et la cote reste celle annoncée', async ({ page }) => {
     const c0 = await cote(page);
-    const s0 = (await pose(page)).scale;
-    await touche(page, 'plus').click();
-    const s1 = (await pose(page)).scale;
-    expect(s1 / s0).toBeCloseTo(1.1, 3);
-    expect(await cote(page)).not.toBe(c0);
-    await touche(page, 'moins').click();
-    expect((await pose(page)).scale).toBeCloseTo(s0, 3);
+    expect(c0).toBe('8,0 × 4,0 m');
+    expect((await pose(page)).scale).toBe(1);
+    for (const action of ['plus', 'moins']) {
+      const t = touche(page, action);
+      await expect(t).toHaveCount(1); // la case reste dans la grille
+      await expect(t).toBeHidden();
+      await expect(t).toBeDisabled();
+      // appui forcé malgré tout : sans effet
+      await t.dispatchEvent('pointerdown');
+      await t.dispatchEvent('pointerup');
+      await t.dispatchEvent('click');
+    }
+    expect((await pose(page)).scale).toBe(1);
     expect(await cote(page)).toBe(c0);
   });
 

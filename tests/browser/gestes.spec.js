@@ -51,16 +51,14 @@ async function pincer(page, de, a) {
   }
 }
 
-test('pincer ×1,5 → scale ≈ 1,5 et la cote en mètres est celle de départ × 1,5 (à 0,1 m près)', async ({ page }) => {
-  const depart = dims(await cote(page));
-  await pincer(page, 100, 150);
-  expect((await pose(page)).scale).toBeCloseTo(1.5, 1);
-  const apres = dims(await cote(page));
-  expect(Math.abs(apres.l - depart.l * 1.5)).toBeLessThanOrEqual(0.1);
-  expect(Math.abs(apres.L - depart.L * 1.5)).toBeLessThanOrEqual(0.1);
-});
-
-test('pincer ×4 → scale plafonné à 2', async ({ page }) => {
-  await pincer(page, 50, 200);
-  expect((await pose(page)).scale).toBeCloseTo(2, 5);
+test('pincer ne change pas l\'échelle : scale reste 1 et la cote reste celle annoncée', async ({ page }) => {
+  const depart = await cote(page);
+  expect(depart).toBe('8,0 × 4,0 m');
+  expect((await pose(page)).scale).toBe(1);
+  await pincer(page, 100, 200);
+  const c = await centre(page);
+  await pointeur(page, 'pointerup', 1, c.x - 100, c.y);
+  await pointeur(page, 'pointerup', 2, c.x + 100, c.y);
+  expect((await pose(page)).scale).toBe(1);
+  expect(await cote(page)).toBe(depart);
 });

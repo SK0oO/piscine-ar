@@ -128,3 +128,38 @@ test('accueil Quick Look : tous les textes font 16 px ou plus', async ({ page })
   });
   expect(fautifs).toEqual([]);
 });
+
+// --- V4a : passage de l'aperçu caméra à Quick Look (plan §12.2 / §12.3) ---
+
+test('V4a : un clic sur « Fixer au sol » coupe la caméra, retire la vue caméra et réaffiche l\'accueil Quick Look', async ({ page }) => {
+  await demarrer(page);
+  const hrefAvant = await lien(page).getAttribute('href');
+  // Le test seul empêche la navigation (écouteur de bulle, après celui du composant) et note le href au moment du clic.
+  await page.evaluate(() => {
+    window.addEventListener('click', (e) => {
+      const a = e.composedPath().find((n) => n.tagName === 'A');
+      window.__clic = { href: a?.getAttribute('href') ?? null };
+      e.preventDefault();
+    });
+  });
+  const nbPistes = await page.evaluate(() => window.__media.flux.reduce((n, f) => n + f.getTracks().length, 0));
+  expect(nbPistes).toBeGreaterThan(0);
+  expect(await page.evaluate(() => window.__media.arrets)).toBe(0);
+
+  await lien(page).click();
+
+  // 1. toutes les pistes arrêtées (une fois stop() appelé sur chacune)
+  await expect.poll(() => page.evaluate(() => window.__media.arrets)).toBeGreaterThanOrEqual(nbPistes);
+  await expect.poll(() => page.evaluate(() =>
+    window.__media.flux.every((f) => f.getTracks().every((t) => t.readyState === 'ended')))).toBe(true);
+  // 2. vue caméra retirée
+  await expect(hote(page).locator('[data-role="gestes"]')).toHaveCount(0);
+  // 3. accueil Quick Look : phrase, 3 vignettes, « Voir dans mon jardin »
+  await expect(hote(page).locator('[data-role="explication-quicklook"]')).toBeVisible();
+  await expect(hote(page).locator('button[data-modele]')).toHaveCount(3);
+  await expect(principalAccueil(page)).toContainText('Voir dans mon jardin');
+  // 4. href du lien inchangé au moment du clic
+  expect((await page.evaluate(() => window.__clic))?.href).toBe(hrefAvant);
+  // 5. aucune erreur
+  expect(await evenements(page, 'error')).toEqual([]);
+});

@@ -143,3 +143,78 @@ describe('fichiers exportés : matières (M1)', () => {
     });
   }
 });
+
+// ---- Lot V4a bis : USDZ plus léger (plan §12.2 / §12.3) ----
+// Lit la taille (largeur, hauteur) d'un PNG ou d'un JPEG à partir de son en-tête.
+function dimsImage(data) {
+  if (data.length > 24 && data.readUInt32BE(0) === 0x89504e47) {
+    return { l: data.readUInt32BE(16), h: data.readUInt32BE(20), type: 'png' };
+  }
+  if (data.length > 4 && data[0] === 0xff && data[1] === 0xd8) {
+    let o = 2;
+    while (o + 9 < data.length) {
+      if (data[o] !== 0xff) { o += 1; continue; }
+      const m = data[o + 1];
+      if (m === 0xff) { o += 1; continue; }
+      if ((m >= 0xc0 && m <= 0xcf) && m !== 0xc4 && m !== 0xc8 && m !== 0xcc) {
+        return { h: data.readUInt16BE(o + 5), l: data.readUInt16BE(o + 7), type: 'jpeg' };
+      }
+      o += 2 + data.readUInt16BE(o + 2);
+    }
+  }
+  return null;
+}
+
+// Images d'un GLB (JSON + BIN) : [{ nom, data }]
+function imagesGlb(buf) {
+  const j = jsonGlb(buf);
+  const lenJson = buf.readUInt32LE(12);
+  const debutBin = 20 + lenJson + 8; // en-tête du fragment BIN : 8 octets
+  return (j.images ?? []).map((img, i) => {
+    const bv = j.bufferViews[img.bufferView];
+    const debut = debutBin + (bv.byteOffset ?? 0);
+    return { nom: `image ${i}`, data: buf.subarray(debut, debut + bv.byteLength) };
+  });
+}
+
+describe('fichiers exportés : poids et textures (V4a bis)', () => {
+  beforeAll(() => {
+    execSync('npm run generate', { cwd: ROOT, stdio: 'pipe' });
+  }, 120_000);
+
+  const MO15 = 1.5 * 1024 * 1024;
+
+  for (const id of ids) {
+    for (const suffixe of ['', '-sol']) {
+      const fichier = `${id}${suffixe}.usdz`;
+      const lire = () => lireZip(readFileSync(resolve(ROOT, 'models/out', fichier)));
+
+      it(`${fichier} : poids < 1,5 Mo`, () => {
+        expect(statSync(resolve(ROOT, 'models/out', fichier)).size).toBeLessThan(MO15);
+      });
+
+      it(`${fichier} : toutes les textures font 512 px au plus (en-tête PNG/JPEG)`, () => {
+        const tex = lire().filter((f) => f.nom.startsWith('textures/') && f.data.length > 0);
+        expect(tex.length, 'textures/ non vide').toBeGreaterThanOrEqual(4);
+        for (const t of tex) {
+          const d = dimsImage(t.data);
+          expect(d, `${t.nom} : en-tête PNG/JPEG lisible`).not.toBeNull();
+          expect(Math.max(d.l, d.h), `${t.nom} (${d.l}×${d.h})`).toBeLessThanOrEqual(512);
+        }
+      });
+    }
+
+    it(`${id}.glb : inchangé, < 4 Mo, textures ≤ 1024 px et au moins une à 1024`, () => {
+      const buf = readFileSync(resolve(ROOT, 'models/out', `${id}.glb`));
+      expect(buf.length).toBeLessThan(4 * 1024 * 1024);
+      const dims = imagesGlb(buf).map((i) => {
+        const d = dimsImage(i.data);
+        expect(d, `${i.nom} : en-tête lisible`).not.toBeNull();
+        return Math.max(d.l, d.h);
+      });
+      expect(dims.length).toBeGreaterThan(0);
+      expect(Math.max(...dims)).toBeLessThanOrEqual(1024);
+      expect(Math.max(...dims)).toBe(1024);
+    });
+  }
+});

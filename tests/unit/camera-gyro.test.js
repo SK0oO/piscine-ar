@@ -85,4 +85,34 @@ describe('createCameraGyroAdaptateur', () => {
     expect(pose.get().position.y).toBeCloseTo(0, 5);
     expect(adaptateur.getPose().position.y).toBeCloseTo(0, 5);
   });
+
+  // ---- Lot V4b (plan §12.2/§12.3) ----
+  describe('V4b : champ de vision et hauteur du téléphone', () => {
+    it('vidéo 1080 × 1920 dans un hôte 390 × 844 : après une image, camera.fov ≈ 67° (±0,5)', async () => {
+      const { stage, win, renderer } = await demarre({ dimsVideo: { largeur: 1080, hauteur: 1920 } });
+      win.emettre('deviceorientation', { alpha: 0, beta: 60, gamma: 0 });
+      renderer.tick();
+      expect(Math.abs(stage.camera.fov - 67)).toBeLessThanOrEqual(0.5);
+    });
+
+    it('sans dimensions vidéo (0 × 0) : camera.fov reste 60', async () => {
+      const { stage, win, renderer } = await demarre({ dimsVideo: { largeur: 0, hauteur: 0 } });
+      win.emettre('deviceorientation', { alpha: 0, beta: 60, gamma: 0 });
+      renderer.tick();
+      expect(stage.camera.fov).toBe(60);
+    });
+
+    it('camera.position.y vaut 1,4 après start() (hauteur du téléphone)', async () => {
+      const { stage } = await demarre({ dimsVideo: { largeur: 1080, hauteur: 1920 } });
+      expect(stage.camera.position.y).toBeCloseTo(1.4, 5);
+    });
+
+    it('mode sans caméra : camera.fov reste 60 après une image', async () => {
+      const { adaptateur, stage, win, renderer } = await demarre({ sansVideo: true });
+      expect(adaptateur.mode).toBe('sans-camera');
+      win.emettre('deviceorientation', { alpha: 0, beta: 60, gamma: 0 });
+      renderer.tick();
+      expect(stage.camera.fov).toBe(60);
+    });
+  });
 });

@@ -1,8 +1,10 @@
 // Enveloppe de getUserMedia et de HTMLMediaElement.play, au-dessus de la fausse caméra de Chromium.
 // À injecter avec page.addInitScript(installerMedia, { refuser, rejeterPlay }) AVANT le chargement. Autonome (sérialisée).
-// Côté page : window.__media = { appels (nombre de getUserMedia), flux (flux ouverts), contraintes }.
+// Côté page : window.__media = { appels (nombre de getUserMedia), flux (flux ouverts), contraintes, arrets (nombre d'appels à stop() sur une piste vidéo, V4a) }.
 export function installerMedia({ refuser = false, rejeterPlay = false } = {}) {
-  const etat = { appels: 0, flux: [], contraintes: [] };
+  const etat = { appels: 0, flux: [], contraintes: [], arrets: 0 };
+  const stopReel = MediaStreamTrack.prototype.stop;
+  MediaStreamTrack.prototype.stop = function () { etat.arrets += 1; return stopReel.call(this); };
   const reel = navigator.mediaDevices.getUserMedia.bind(navigator.mediaDevices);
   navigator.mediaDevices.getUserMedia = (c) => {
     etat.appels += 1;
