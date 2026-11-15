@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Essai télécommande RA</title>
+<style>
+  body { margin: 0; font: 18px/1.45 -apple-system, system-ui, sans-serif; background: #0f1419; color: #fff; }
+  main { max-width: 34rem; margin: 0 auto; padding: 24px 16px 40px; display: grid; gap: 18px; }
+  h1 { font-size: 24px; margin: 0; }
+  a.ra { display: flex; align-items: center; gap: 14px; background: #fff; color: #0f1419; border-radius: 14px; padding: 14px 18px; font-weight: 700; text-decoration: none; }
+  a.ra img { width: 56px; height: 56px; border-radius: 10px; object-fit: cover; }
+  ul { margin: 0; padding-left: 1.2em; display: grid; gap: 8px; }
+  .c { display: inline-block; width: 14px; height: 14px; border-radius: 3px; vertical-align: -1px; margin-right: 6px; }
+  p { margin: 0; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Essai : télécommande dans la vue Apple</h1>
+  <p>Une piscine simple 8 × 4 m, avec des boutons posés au sol autour d'elle.</p>
+  <a class="ra" rel="ar" href="essai-ra.usdz#allowsContentScaling=0"><img src="../../models/out/rectangulaire-8x4.png" alt=""></a>
+  <p id="aide-lien">Touche l'image blanche ci-dessus pour ouvrir la vue Apple.</p>
+  <ul>
+    <li><span class="c" style="background:#ff8000"></span>Flèche orange : la piscine avance de 50 cm dans ce sens.</li>
+    <li><span class="c" style="background:#1a73ff"></span>Flèche bleue : la piscine tourne.</li>
+    <li><span class="c" style="background:#1abf4d"></span>Carré vert : la piscine est figée, les boutons disparaissent.</li>
+    <li><span class="c" style="background:#e62626"></span>Carré rouge : on la libère, les boutons reviennent.</li>
+  </ul>
+  <p>Dis-moi ce qui se passe quand tu touches chaque bouton.</p>
+</main>
+</body>
+</html>

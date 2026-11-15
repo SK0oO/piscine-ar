@@ -19,6 +19,7 @@ function sitePages() {
       cpSync('models/params', 'dist/models/params', { recursive: true });
       cpSync('demo/config', 'dist/demo/config', { recursive: true });
       cpSync('demo/maquette-v2.html', 'dist/demo/maquette-v2.html');
+      cpSync('demo/essai', 'dist/demo/essai', { recursive: true }); // essai télécommande dans Quick Look (15/11)
       mkdirSync('dist', { recursive: true });
       writeFileSync('dist/.nojekyll', '');
       writeFileSync(

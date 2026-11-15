@@ -1,0 +1,572 @@
+#usda 1.0
+(
+	customLayerData = {
+		string creator = "piscine-ar essai behaviors"
+	}
+	defaultPrim = "Racine"
+	metersPerUnit = 1
+	upAxis = "Y"
+)
+
+def Xform "Racine"
+{
+	def Scope "Scenes" (
+		kind = "sceneLibrary"
+	)
+	{
+		def Xform "Scene" (
+			apiSchemas = ["Preliminary_AnchoringAPI"]
+			customData = {
+				bool preliminary_collidesWithEnvironment = 0
+				string sceneName = "Scene"
+			}
+			sceneName = "Scene"
+		)
+		{
+			token preliminary:anchoring:type = "plane"
+			token preliminary:planeAnchoring:alignment = "horizontal"
+
+			def Xform "Piscine"
+			{
+					def Mesh "Margelle" (
+						prepend apiSchemas = ["MaterialBindingAPI"]
+					)
+					{
+						uniform bool doubleSided = 0
+						int[] faceVertexCounts = [4, 4, 4, 4, 4, 4]
+						int[] faceVertexIndices = [0, 1, 2, 3, 7, 6, 5, 4, 4, 5, 1, 0, 5, 6, 2, 1, 6, 7, 3, 2, 7, 4, 0, 3]
+						point3f[] points = [(-4.3, -0.05, -2.3), (4.3, -0.05, -2.3), (4.3, -0.05, 2.3), (-4.3, -0.05, 2.3), (-4.3, 0, -2.3), (4.3, 0, -2.3), (4.3, 0, 2.3), (-4.3, 0, 2.3)]
+						uniform token subdivisionScheme = "none"
+						rel material:binding = </Racine/Materiaux/Margelle>
+					}
+					def Mesh "Eau" (
+						prepend apiSchemas = ["MaterialBindingAPI"]
+					)
+					{
+						uniform bool doubleSided = 0
+						int[] faceVertexCounts = [4, 4, 4, 4, 4, 4]
+						int[] faceVertexIndices = [0, 1, 2, 3, 7, 6, 5, 4, 4, 5, 1, 0, 5, 6, 2, 1, 6, 7, 3, 2, 7, 4, 0, 3]
+						point3f[] points = [(-4, 0, -2), (4, 0, -2), (4, 0, 2), (-4, 0, 2), (-4, 0.005, -2), (4, 0.005, -2), (4, 0.005, 2), (-4, 0.005, 2)]
+						uniform token subdivisionScheme = "none"
+						rel material:binding = </Racine/Materiaux/Eau>
+					}
+
+				def Xform "Commandes"
+				{
+						def Mesh "Loin" (
+							prepend apiSchemas = ["MaterialBindingAPI"]
+						)
+						{
+							uniform bool doubleSided = 0
+							int[] faceVertexCounts = [3, 3, 4, 4, 4]
+							int[] faceVertexIndices = [0, 1, 2, 5, 4, 3, 3, 4, 1, 0, 4, 5, 2, 1, 5, 3, 0, 2]
+							point3f[] points = [(0, 0.005, -3.68), (0.2677, 0.005, -2.9027), (-0.2677, 0.005, -2.9027), (0, 0.065, -3.68), (0.2677, 0.065, -2.9027), (-0.2677, 0.065, -2.9027)]
+							uniform token subdivisionScheme = "none"
+							rel material:binding = </Racine/Materiaux/Orange>
+						}
+						def Mesh "Pres" (
+							prepend apiSchemas = ["MaterialBindingAPI"]
+						)
+						{
+							uniform bool doubleSided = 0
+							int[] faceVertexCounts = [3, 3, 4, 4, 4]
+							int[] faceVertexIndices = [0, 1, 2, 5, 4, 3, 3, 4, 1, 0, 4, 5, 2, 1, 5, 3, 0, 2]
+							point3f[] points = [(0, 0.005, 3.68), (-0.2677, 0.005, 2.9027), (0.2677, 0.005, 2.9027), (0, 0.065, 3.68), (-0.2677, 0.065, 2.9027), (0.2677, 0.065, 2.9027)]
+							uniform token subdivisionScheme = "none"
+							rel material:binding = </Racine/Materiaux/Orange>
+						}
+						def Mesh "Gauche" (
+							prepend apiSchemas = ["MaterialBindingAPI"]
+						)
+						{
+							uniform bool doubleSided = 0
+							int[] faceVertexCounts = [3, 3, 4, 4, 4]
+							int[] faceVertexIndices = [0, 1, 2, 5, 4, 3, 3, 4, 1, 0, 4, 5, 2, 1, 5, 3, 0, 2]
+							point3f[] points = [(-5.68, 0.005, 0), (-4.9027, 0.005, -0.2677), (-4.9027, 0.005, 0.2677), (-5.68, 0.065, 0), (-4.9027, 0.065, -0.2677), (-4.9027, 0.065, 0.2677)]
+							uniform token subdivisionScheme = "none"
+							rel material:binding = </Racine/Materiaux/Orange>
+						}
+						def Mesh "Droite" (
+							prepend apiSchemas = ["MaterialBindingAPI"]
+						)
+						{
+							uniform bool doubleSided = 0
+							int[] faceVertexCounts = [3, 3, 4, 4, 4]
+							int[] faceVertexIndices = [0, 1, 2, 5, 4, 3, 3, 4, 1, 0, 4, 5, 2, 1, 5, 3, 0, 2]
+							point3f[] points = [(5.68, 0.005, 0), (4.9027, 0.005, 0.2677), (4.9027, 0.005, -0.2677), (5.68, 0.065, 0), (4.9027, 0.065, 0.2677), (4.9027, 0.065, -0.2677)]
+							uniform token subdivisionScheme = "none"
+							rel material:binding = </Racine/Materiaux/Orange>
+						}
+						def Mesh "TournerG" (
+							prepend apiSchemas = ["MaterialBindingAPI"]
+						)
+						{
+							uniform bool doubleSided = 0
+							int[] faceVertexCounts = [3, 3, 4, 4, 4]
+							int[] faceVertexIndices = [0, 1, 2, 5, 4, 3, 3, 4, 1, 0, 4, 5, 2, 1, 5, 3, 0, 2]
+							point3f[] points = [(-2.984, 0.005, 3.2), (-2.3622, 0.005, 2.9859), (-2.3622, 0.005, 3.4141), (-2.984, 0.065, 3.2), (-2.3622, 0.065, 2.9859), (-2.3622, 0.065, 3.4141)]
+							uniform token subdivisionScheme = "none"
+							rel material:binding = </Racine/Materiaux/Bleu>
+						}
+						def Mesh "TournerD" (
+							prepend apiSchemas = ["MaterialBindingAPI"]
+						)
+						{
+							uniform bool doubleSided = 0
+							int[] faceVertexCounts = [3, 3, 4, 4, 4]
+							int[] faceVertexIndices = [0, 1, 2, 5, 4, 3, 3, 4, 1, 0, 4, 5, 2, 1, 5, 3, 0, 2]
+							point3f[] points = [(2.984, 0.005, 3.2), (2.3622, 0.005, 3.4141), (2.3622, 0.005, 2.9859), (2.984, 0.065, 3.2), (2.3622, 0.065, 3.4141), (2.3622, 0.065, 2.9859)]
+							uniform token subdivisionScheme = "none"
+							rel material:binding = </Racine/Materiaux/Bleu>
+						}
+						def Mesh "Figer" (
+							prepend apiSchemas = ["MaterialBindingAPI"]
+						)
+						{
+							uniform bool doubleSided = 0
+							int[] faceVertexCounts = [4, 4, 4, 4, 4, 4]
+							int[] faceVertexIndices = [0, 1, 2, 3, 7, 6, 5, 4, 4, 5, 1, 0, 5, 6, 2, 1, 6, 7, 3, 2, 7, 4, 0, 3]
+							point3f[] points = [(4.92, 0.005, 2.92), (5.48, 0.005, 2.92), (5.48, 0.005, 3.48), (4.92, 0.005, 3.48), (4.92, 0.125, 2.92), (5.48, 0.125, 2.92), (5.48, 0.125, 3.48), (4.92, 0.125, 3.48)]
+							uniform token subdivisionScheme = "none"
+							rel material:binding = </Racine/Materiaux/Vert>
+						}
+				}
+
+					def Mesh "Liberer" (
+						prepend apiSchemas = ["MaterialBindingAPI"]
+					)
+					{
+						uniform bool doubleSided = 0
+						int[] faceVertexCounts = [4, 4, 4, 4, 4, 4]
+						int[] faceVertexIndices = [0, 1, 2, 3, 7, 6, 5, 4, 4, 5, 1, 0, 5, 6, 2, 1, 6, 7, 3, 2, 7, 4, 0, 3]
+						point3f[] points = [(4.92, 0.005, 2.92), (5.48, 0.005, 2.92), (5.48, 0.005, 3.48), (4.92, 0.005, 3.48), (4.92, 0.125, 2.92), (5.48, 0.125, 2.92), (5.48, 0.125, 3.48), (4.92, 0.125, 3.48)]
+						uniform token subdivisionScheme = "none"
+						rel material:binding = </Racine/Materiaux/Rouge>
+					}
+			}
+
+			def Scope "Cibles"
+			{
+				def Xform "Loin"
+				{
+					double3 xformOp:translate = (0, 0, -0.5)
+					uniform token[] xformOpOrder = ["xformOp:translate"]
+				}
+				def Xform "Pres"
+				{
+					double3 xformOp:translate = (0, 0, 0.5)
+					uniform token[] xformOpOrder = ["xformOp:translate"]
+				}
+				def Xform "Gauche"
+				{
+					double3 xformOp:translate = (-0.5, 0, 0)
+					uniform token[] xformOpOrder = ["xformOp:translate"]
+				}
+				def Xform "Droite"
+				{
+					double3 xformOp:translate = (0.5, 0, 0)
+					uniform token[] xformOpOrder = ["xformOp:translate"]
+				}
+				def Xform "TournerG"
+				{
+					float xformOp:rotateY = 15
+					uniform token[] xformOpOrder = ["xformOp:rotateY"]
+				}
+				def Xform "TournerD"
+				{
+					float xformOp:rotateY = -15
+					uniform token[] xformOpOrder = ["xformOp:rotateY"]
+				}
+			}
+
+			def Scope "Behaviors"
+			{
+				def Preliminary_Behavior "Tap_Loin"
+				{
+					rel triggers = <Tap>
+					rel actions = <Actions>
+					uniform bool exclusive = 0
+
+					def Preliminary_Trigger "Tap"
+					{
+						rel affectedObjects = </Racine/Scenes/Scene/Piscine/Commandes/Loin>
+						token info:id = "TapGesture"
+					}
+
+					def Preliminary_Action "Actions"
+					{
+						rel actions = [<Bouger_Loin>]
+						token info:id = "Group"
+						bool loops = 0
+						int performCount = 1
+						token type = "parallel"
+						def Preliminary_Action "Bouger_Loin"
+						{
+							rel affectedObjects = </Racine/Scenes/Scene/Piscine>
+							double duration = 0.3
+							token easeType = "inout"
+							token info:id = "Transform"
+							token type = "relative"
+							rel xformTarget = </Racine/Scenes/Scene/Cibles/Loin>
+						}
+					}
+				}
+
+				def Preliminary_Behavior "Tap_Pres"
+				{
+					rel triggers = <Tap>
+					rel actions = <Actions>
+					uniform bool exclusive = 0
+
+					def Preliminary_Trigger "Tap"
+					{
+						rel affectedObjects = </Racine/Scenes/Scene/Piscine/Commandes/Pres>
+						token info:id = "TapGesture"
+					}
+
+					def Preliminary_Action "Actions"
+					{
+						rel actions = [<Bouger_Pres>]
+						token info:id = "Group"
+						bool loops = 0
+						int performCount = 1
+						token type = "parallel"
+						def Preliminary_Action "Bouger_Pres"
+						{
+							rel affectedObjects = </Racine/Scenes/Scene/Piscine>
+							double duration = 0.3
+							token easeType = "inout"
+							token info:id = "Transform"
+							token type = "relative"
+							rel xformTarget = </Racine/Scenes/Scene/Cibles/Pres>
+						}
+					}
+				}
+
+				def Preliminary_Behavior "Tap_Gauche"
+				{
+					rel triggers = <Tap>
+					rel actions = <Actions>
+					uniform bool exclusive = 0
+
+					def Preliminary_Trigger "Tap"
+					{
+						rel affectedObjects = </Racine/Scenes/Scene/Piscine/Commandes/Gauche>
+						token info:id = "TapGesture"
+					}
+
+					def Preliminary_Action "Actions"
+					{
+						rel actions = [<Bouger_Gauche>]
+						token info:id = "Group"
+						bool loops = 0
+						int performCount = 1
+						token type = "parallel"
+						def Preliminary_Action "Bouger_Gauche"
+						{
+							rel affectedObjects = </Racine/Scenes/Scene/Piscine>
+							double duration = 0.3
+							token easeType = "inout"
+							token info:id = "Transform"
+							token type = "relative"
+							rel xformTarget = </Racine/Scenes/Scene/Cibles/Gauche>
+						}
+					}
+				}
+
+				def Preliminary_Behavior "Tap_Droite"
+				{
+					rel triggers = <Tap>
+					rel actions = <Actions>
+					uniform bool exclusive = 0
+
+					def Preliminary_Trigger "Tap"
+					{
+						rel affectedObjects = </Racine/Scenes/Scene/Piscine/Commandes/Droite>
+						token info:id = "TapGesture"
+					}
+
+					def Preliminary_Action "Actions"
+					{
+						rel actions = [<Bouger_Droite>]
+						token info:id = "Group"
+						bool loops = 0
+						int performCount = 1
+						token type = "parallel"
+						def Preliminary_Action "Bouger_Droite"
+						{
+							rel affectedObjects = </Racine/Scenes/Scene/Piscine>
+							double duration = 0.3
+							token easeType = "inout"
+							token info:id = "Transform"
+							token type = "relative"
+							rel xformTarget = </Racine/Scenes/Scene/Cibles/Droite>
+						}
+					}
+				}
+
+				def Preliminary_Behavior "Tap_TournerG"
+				{
+					rel triggers = <Tap>
+					rel actions = <Actions>
+					uniform bool exclusive = 0
+
+					def Preliminary_Trigger "Tap"
+					{
+						rel affectedObjects = </Racine/Scenes/Scene/Piscine/Commandes/TournerG>
+						token info:id = "TapGesture"
+					}
+
+					def Preliminary_Action "Actions"
+					{
+						rel actions = [<Bouger_TournerG>]
+						token info:id = "Group"
+						bool loops = 0
+						int performCount = 1
+						token type = "parallel"
+						def Preliminary_Action "Bouger_TournerG"
+						{
+							rel affectedObjects = </Racine/Scenes/Scene/Piscine>
+							double duration = 0.3
+							token easeType = "inout"
+							token info:id = "Transform"
+							token type = "relative"
+							rel xformTarget = </Racine/Scenes/Scene/Cibles/TournerG>
+						}
+					}
+				}
+
+				def Preliminary_Behavior "Tap_TournerD"
+				{
+					rel triggers = <Tap>
+					rel actions = <Actions>
+					uniform bool exclusive = 0
+
+					def Preliminary_Trigger "Tap"
+					{
+						rel affectedObjects = </Racine/Scenes/Scene/Piscine/Commandes/TournerD>
+						token info:id = "TapGesture"
+					}
+
+					def Preliminary_Action "Actions"
+					{
+						rel actions = [<Bouger_TournerD>]
+						token info:id = "Group"
+						bool loops = 0
+						int performCount = 1
+						token type = "parallel"
+						def Preliminary_Action "Bouger_TournerD"
+						{
+							rel affectedObjects = </Racine/Scenes/Scene/Piscine>
+							double duration = 0.3
+							token easeType = "inout"
+							token info:id = "Transform"
+							token type = "relative"
+							rel xformTarget = </Racine/Scenes/Scene/Cibles/TournerD>
+						}
+					}
+				}
+
+				def Preliminary_Behavior "Tap_Figer"
+				{
+					rel triggers = <Tap>
+					rel actions = <Actions>
+					uniform bool exclusive = 0
+
+					def Preliminary_Trigger "Tap"
+					{
+						rel affectedObjects = </Racine/Scenes/Scene/Piscine/Commandes/Figer>
+						token info:id = "TapGesture"
+					}
+
+					def Preliminary_Action "Actions"
+					{
+						rel actions = [<Cacher_commandes>, <Montrer_liberer>]
+						token info:id = "Group"
+						bool loops = 0
+						int performCount = 1
+						token type = "parallel"
+						def Preliminary_Action "Cacher_commandes"
+						{
+							rel affectedObjects = </Racine/Scenes/Scene/Piscine/Commandes>
+							double duration = 0.2
+							token easeType = "none"
+							token info:id = "Visibility"
+							token motionType = "none"
+							double moveDistance = 0
+							token style = "basic"
+							token type = "hide"
+						}
+						def Preliminary_Action "Montrer_liberer"
+						{
+							rel affectedObjects = </Racine/Scenes/Scene/Piscine/Liberer>
+							double duration = 0.2
+							token easeType = "none"
+							token info:id = "Visibility"
+							token motionType = "none"
+							double moveDistance = 0
+							token style = "basic"
+							token type = "show"
+						}
+					}
+				}
+
+				def Preliminary_Behavior "Tap_Liberer"
+				{
+					rel triggers = <Tap>
+					rel actions = <Actions>
+					uniform bool exclusive = 0
+
+					def Preliminary_Trigger "Tap"
+					{
+						rel affectedObjects = </Racine/Scenes/Scene/Piscine/Liberer>
+						token info:id = "TapGesture"
+					}
+
+					def Preliminary_Action "Actions"
+					{
+						rel actions = [<Montrer_commandes>, <Cacher_liberer>]
+						token info:id = "Group"
+						bool loops = 0
+						int performCount = 1
+						token type = "parallel"
+						def Preliminary_Action "Montrer_commandes"
+						{
+							rel affectedObjects = </Racine/Scenes/Scene/Piscine/Commandes>
+							double duration = 0.2
+							token easeType = "none"
+							token info:id = "Visibility"
+							token motionType = "none"
+							double moveDistance = 0
+							token style = "basic"
+							token type = "show"
+						}
+						def Preliminary_Action "Cacher_liberer"
+						{
+							rel affectedObjects = </Racine/Scenes/Scene/Piscine/Liberer>
+							double duration = 0.2
+							token easeType = "none"
+							token info:id = "Visibility"
+							token motionType = "none"
+							double moveDistance = 0
+							token style = "basic"
+							token type = "hide"
+						}
+					}
+				}
+
+				def Preliminary_Behavior "Depart"
+				{
+					rel triggers = <Entree>
+					rel actions = <Cacher>
+					uniform bool exclusive = 0
+
+					def Preliminary_Trigger "Entree"
+					{
+						token info:id = "SceneTransition"
+						token type = "enter"
+					}
+
+				def Preliminary_Action "Cacher"
+				{
+					rel affectedObjects = </Racine/Scenes/Scene/Piscine/Liberer>
+					double duration = 0.2
+					token easeType = "none"
+					token info:id = "Visibility"
+					token motionType = "none"
+					double moveDistance = 0
+					token style = "basic"
+					token type = "hide"
+				}
+				}
+			}
+		}
+	}
+
+	def Scope "Materiaux"
+	{
+		def Material "Margelle"
+		{
+			token outputs:surface.connect = </Racine/Materiaux/Margelle/Surface.outputs:surface>
+
+			def Shader "Surface"
+			{
+				uniform token info:id = "UsdPreviewSurface"
+				color3f inputs:diffuseColor = (0.86, 0.81, 0.73)
+				float inputs:metallic = 0
+				float inputs:roughness = 0.85
+				token outputs:surface
+			}
+		}
+
+		def Material "Eau"
+		{
+			token outputs:surface.connect = </Racine/Materiaux/Eau/Surface.outputs:surface>
+
+			def Shader "Surface"
+			{
+				uniform token info:id = "UsdPreviewSurface"
+				color3f inputs:diffuseColor = (0.2, 0.62, 0.82)
+				float inputs:metallic = 0
+				float inputs:roughness = 0.1
+				token outputs:surface
+			}
+		}
+
+		def Material "Orange"
+		{
+			token outputs:surface.connect = </Racine/Materiaux/Orange/Surface.outputs:surface>
+
+			def Shader "Surface"
+			{
+				uniform token info:id = "UsdPreviewSurface"
+				color3f inputs:diffuseColor = (1, 0.5, 0)
+				float inputs:metallic = 0
+				float inputs:roughness = 0.5
+				token outputs:surface
+			}
+		}
+
+		def Material "Bleu"
+		{
+			token outputs:surface.connect = </Racine/Materiaux/Bleu/Surface.outputs:surface>
+
+			def Shader "Surface"
+			{
+				uniform token info:id = "UsdPreviewSurface"
+				color3f inputs:diffuseColor = (0.1, 0.45, 1)
+				float inputs:metallic = 0
+				float inputs:roughness = 0.5
+				token outputs:surface
+			}
+		}
+
+		def Material "Vert"
+		{
+			token outputs:surface.connect = </Racine/Materiaux/Vert/Surface.outputs:surface>
+
+			def Shader "Surface"
+			{
+				uniform token info:id = "UsdPreviewSurface"
+				color3f inputs:diffuseColor = (0.1, 0.75, 0.3)
+				float inputs:metallic = 0
+				float inputs:roughness = 0.5
+				token outputs:surface
+			}
+		}
+
+		def Material "Rouge"
+		{
+			token outputs:surface.connect = </Racine/Materiaux/Rouge/Surface.outputs:surface>
+
+			def Shader "Surface"
+			{
+				uniform token info:id = "UsdPreviewSurface"
+				color3f inputs:diffuseColor = (0.9, 0.15, 0.15)
+				float inputs:metallic = 0
+				float inputs:roughness = 0.5
+				token outputs:surface
+			}
+		}
+	}
+}
